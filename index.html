@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quantum Computing, Mapped — how it works, what it's for, where it stands</title>
+<meta name="description" content="A nine-part field map of quantum computing for engineers: the math of qubits and gates, what it can and cannot do, error correction, who is building it, and the state of play in November 2026." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="paper.css" />
+<style>
+  main{max-width:960px}
+  .hero{padding:24px 0 8px}
+  .hero h1{font-size:clamp(32px,5.5vw,52px);line-height:1.05;margin:10px 0 14px;letter-spacing:-.01em}
+  .hero .sub{font-size:18px;color:var(--ink-dim);max-width:720px;line-height:1.55}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:26px 0 8px}
+  .fact{border:1px solid var(--line-soft);border-radius:8px;padding:12px 14px}
+  .fact .k{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  .fact .v{font-size:17px;font-weight:600;margin-top:4px;line-height:1.35}
+  .fact .s{font-size:13px;color:var(--ink-dim);margin-top:6px;line-height:1.5}
+  section{padding:56px 0;border-bottom:1px solid var(--line-soft);scroll-margin-top:64px}
+  section:last-of-type{border-bottom:none}
+  .arc-head{display:flex;align-items:baseline;gap:14px;margin:0 0 6px;flex-wrap:wrap}
+  .arc-head .idx{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;color:var(--ink-dim)}
+  .arc-head h2{margin:0;font-size:26px}
+  .arc-sub{color:var(--ink-dim);margin:0 0 22px;max-width:680px}
+  .row{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 0;border-top:1px solid var(--line-soft);align-items:start}
+  .row:first-of-type{border-top:none}
+  .row .num{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-dim);padding-top:3px}
+  .row .name{font-weight:600;font-size:17px;line-height:1.3}
+  .row .name a{color:var(--ink)}
+  .row .meta{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-dim);margin:4px 0 6px;display:flex;flex-wrap:wrap;gap:10px}
+  .row .desc{color:var(--ink-dim);font-size:14.5px;line-height:1.55}
+  .amber .row .name a:hover{color:var(--off)} .cyan .row .name a:hover{color:var(--def)}
+  .check{width:16px;height:16px;border:1px solid var(--ink-dim);border-radius:4px;display:inline-block;vertical-align:-3px;margin-right:6px;cursor:pointer;background:transparent}
+  .check.on{background:var(--off);border-color:var(--off)}
+  .cyan .check.on{background:var(--def);border-color:var(--def)}
+  .spine{list-style:none;padding:0;margin:0 0 8px;display:grid;gap:0}
+  .spine li{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:14px 0;border-top:1px solid var(--line-soft);align-items:baseline;max-width:none}
+  .spine li::before{content:none}
+  .spine li:first-child{border-top:none}
+  .spine .step{font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--off-bright)}
+  .spine .step.b{color:var(--def)}
+  .spine .say{font-size:15.5px;line-height:1.6}
+  .spine .say b{color:var(--ink)}
+  @media (max-width:560px){.spine li{grid-template-columns:1fr;gap:4px}}
+  .links{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+  .links a{display:block;border:1px solid var(--line-soft);border-radius:8px;padding:12px 14px;color:var(--ink);text-decoration:none}
+  .links a:hover{border-color:var(--def)}
+  .links a b{display:block;font-size:15px;margin-bottom:3px}
+  .links a span{font-size:13px;color:var(--ink-dim)}
+  .progress{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);margin-top:8px}
+  .row li,.links li{max-width:none}
+</style>
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>QUANTUM&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="https://idvorkin-ai-tools.github.io/">← all maps</a>
+</div></header>
+<main>
+  <div class="hero">
+    <div class="eyebrow"><span class="box wb mono">QUANTUM COMPUTING · NOV 2026</span><span class="mono">9 parts · 1 calculator · every claim sourced</span></div>
+    <h1>Quantum computing, mapped</h1>
+    <p class="sub">For engineers who want the real thing without a physics degree: the linear algebra of qubits and gates, what a quantum computer can and cannot speed up, why error correction is the whole game, who is building the machines, and what actually happened in 2024–2026 once you read past the press releases. Current-state claims link to their sources, and company announcements that are not peer reviewed are marked as such.</p>
+    <div class="facts">
+      <div class="fact"><div class="k">Error correction works</div><div class="v">Logical errors now fall as codes grow</div><div class="s">Google's Willow showed it for the surface code in Dec 2024 (<a class="lnk" href="https://www.nature.com/articles/s41586-024-08449-y" target="_blank" rel="noopener">Nature</a>); Quantinuum reports ~5×10⁻⁶ per round at distance 7 on Helios, Oct 2026 (<a class="lnk" href="https://www.quantinuum.com/fault-tolerance-by-2029" target="_blank" rel="noopener">company report</a>).</div></div>
+      <div class="fact"><div class="k">Still small</div><div class="v">Tens of logical qubits, not thousands</div><div class="s">The biggest 2026 "logical" demos are error <i>detection</i> with post-selection (<a class="lnk" href="parts/p08.html#logical-table">table</a>). Vendors target ~200 logical qubits around 2029; useful chemistry and RSA need far more.</div></div>
+      <div class="fact"><div class="k">Crypto clock</div><div class="v">RSA and ECC: deprecated after 2030, disallowed after 2035</div><div class="s">NIST IR 8547, final 27 Oct 2026 (<a class="lnk" href="https://csrc.nist.gov/pubs/ir/8547/final" target="_blank" rel="noopener">NIST</a>). Migrate to ML-KEM and ML-DSA now.</div></div>
+      <div class="fact"><div class="k">Try it</div><div class="v"><a class="lnk" href="parts/p06.html#qec-calc">How many physical qubits per logical qubit?</a></div><div class="s">Drag the error rate and watch the overhead.</div></div>
+    </div>
+    <p class="progress" id="progress">Tick a page when you have worked through it; this browser remembers.</p>
+  </div>
+
+  <section id="spine">
+    <div class="arc-head"><span class="idx">00</span><h2>The spine</h2></div>
+    <p class="arc-sub">Six ideas carry the whole subject. Read this list first; every page below unpacks one or two of them.</p>
+    <ul class="spine">
+      <li><span class="step">1 · Amplitudes</span><span class="say"><b>A classical probabilistic computer tracks 2ⁿ non-negative probabilities; a quantum computer tracks 2ⁿ complex amplitudes.</b> Gates are unitary matrices instead of stochastic ones, and probabilities are squared magnitudes <span class="mono">|a_x|²</span>. That one change is the entire difference. <a class="lnk" href="parts/p01.html">P1</a> · <a class="lnk" href="parts/p04.html">P4</a></span></li>
+      <li><span class="step">2 · Interference</span><span class="say"><b>Amplitudes can be negative, so paths can cancel.</b> A quantum algorithm is a choreography that makes wrong answers cancel and right ones add up before you measure. Superposition alone buys nothing, because measurement hands you one sample. <a class="lnk" href="parts/p03.html">P3</a> · <a class="lnk" href="parts/p04.html">P4</a></span></li>
+      <li><span class="step">3 · Structure</span><span class="say"><b>Big speedups need problem structure.</b> Period finding (Shor) and simulating quantum physics get exponential gains; unstructured search (Grover) gets only <span class="mono">√N</span>; NP-complete problems are not believed to fall at all. <a class="lnk" href="parts/p02.html">P2</a> · <a class="lnk" href="parts/p05.html">P5</a></span></li>
+      <li><span class="step b">4 · Errors</span><span class="say"><b>Physical qubits fail about once per thousand operations; useful algorithms need about one failure per trillion.</b> Error correction closes that gap by spending hundreds to thousands of physical qubits per logical qubit, and only works below a threshold error rate. <a class="lnk" href="parts/p06.html">P6</a></span></li>
+      <li><span class="step b">5 · Where it stands</span><span class="say"><b>2024–2026 proved error correction scales in principle, on tens of logical qubits.</b> The headline numbers mean different things (detection vs correction, memory vs gates, distance 2 vs 7), and several are company claims not yet peer reviewed. <a class="lnk" href="parts/p07.html">P7</a> · <a class="lnk" href="parts/p08.html">P8</a></span></li>
+      <li><span class="step b">6 · What to do</span><span class="say"><b>For most engineers, the actionable part is post-quantum cryptography, now.</b> Chemistry and materials are the real long-term prize; claims about optimisation and machine learning deserve scepticism. <a class="lnk" href="parts/p09.html">P9</a></span></li>
+    </ul>
+  </section>
+
+  <section id="why" class="amber">
+    <div class="arc-head"><span class="idx">01 · PARTS 1–3</span><h2>Why quantum</h2></div>
+    <p class="arc-sub">Start from the computer you know, find exactly where it runs out of road, then meet the physics that offers a different model of computation.</p>
+    <div class="row"><div class="num"><span class="check" data-p="p01"></span>01</div><div><div class="name"><a href="parts/p01.html">Fundamentals of Classical Computation</a></div><div class="meta"><span>bits · gates · reversibility · probability vectors · P, BPP, NP</span></div><div class="desc">Circuits, universal gates and the probabilistic computer written as a 2ⁿ-entry probability vector pushed through stochastic matrices: the exact setup that quantum computing changes one rule of.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p02"></span>02</div><div><div class="name"><a href="parts/p02.html">Why Quantum?</a></div><div class="meta"><span>Feynman's argument · exponential state space · BQP vs NP · kinds of speedup</span></div><div class="desc">Simulating nature is exponentially expensive on a classical machine, so build a machine out of nature. What that buys, and the problems it is not believed to help with.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p03"></span>03</div><div><div class="name"><a href="parts/p03.html">Enter the Quantum World</a></div><div class="meta"><span>amplitudes · interference · measurement · entanglement · no-cloning · qubit hardware</span></div><div class="desc">The physics an engineer actually needs, as calculations rather than metaphors, plus a one-line tour of each way people build a qubit.</div></div></div>
+  </section>
+
+  <section id="how" class="amber">
+    <div class="arc-head"><span class="idx">02 · PARTS 4–6</span><h2>How it works, and what it's for</h2></div>
+    <p class="arc-sub">The math of the model, the algorithms that justify it, and the engineering wall between the model and a useful machine.</p>
+    <div class="row"><div class="num"><span class="check" data-p="p04"></span>04</div><div><div class="name"><a href="parts/p04.html">Fundamentals of Quantum Computation</a></div><div class="meta"><span>state vectors · tensor products · unitary gates · Clifford+T · measurement</span></div><div class="desc">Qubits and gates as linear algebra, interference doing real work in a small algorithm, why Clifford circuits are easy to simulate and the T gate is the expensive ingredient, and why you cannot read out 2ⁿ amplitudes.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p05"></span>05</div><div><div class="name"><a href="parts/p05.html">Capabilities of Quantum Computation</a></div><div class="meta"><span>Shor · Grover · chemistry and materials · optimisation and ML, honestly</span></div><div class="desc">What each algorithm buys and what it costs in qubits and hours, with a scorecard from strong (simulation, cryptanalysis) to unproven (optimisation, machine learning).</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p06"></span>06</div><div><div class="name"><a href="parts/p06.html">Challenges of Quantum Computation</a></div><div class="meta"><span>decoherence · threshold theorem · surface code · qLDPC · decoding · <b>calculator</b></span></div><div class="desc">Why errors are the whole problem, how the surface code turns many bad qubits into one good one, and an interactive that shows why a useful machine needs hundreds of thousands to millions of physical qubits.</div></div></div>
+  </section>
+
+  <section id="now" class="cyan">
+    <div class="arc-head"><span class="idx">03 · PARTS 7–9</span><h2>Where it stands, November 2026</h2></div>
+    <p class="arc-sub">Who is building what, what they have actually shown, and what a software engineer should do about it. Every current-state claim is linked; company claims are tagged.</p>
+    <div class="row"><div class="num"><span class="check" data-p="p07"></span>07</div><div><div class="name"><a href="parts/p07.html">Dominant Institutions in Quantum Computing</a></div><div class="meta"><span>superconducting · trapped ion · neutral atom · photonic · topological · governments</span></div><div class="desc">The players by modality, their best public results and their stated roadmaps, with the review status of each claim.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p08"></span>08</div><div><div class="name"><a href="parts/p08.html">Recent Breakthroughs</a></div><div class="meta"><span>Willow · Helios · IBM + UChicago · Infleqtion · NIST IR 8547 · RSA estimates</span></div><div class="desc">2024 to November 2026, with a table of what "logical qubit" meant in each announcement and a checklist for reading the next press release.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p09"></span>09</div><div><div class="name"><a href="parts/p09.html">Conclusion</a></div><div class="meta"><span>timelines · signals to watch · PQC migration · how to get hands-on</span></div><div class="desc">What to believe, what would change your mind, and the short list of things worth doing now.</div></div></div>
+  </section>
+
+  <section id="refs">
+    <div class="arc-head"><span class="idx">04</span><h2>Start here if you want to go deeper</h2></div>
+    <div class="links">
+      <a href="https://arxiv.org/abs/1801.00862" target="_blank" rel="noopener"><b>Quantum Computing in the NISQ era and beyond</b><span>John Preskill, 2018 — the paper that named the noisy era</span></a>
+      <a href="https://www.nature.com/articles/s41586-024-08449-y" target="_blank" rel="noopener"><b>Quantum error correction below the surface code threshold</b><span>Google Quantum AI, Nature, Dec 2024</span></a>
+      <a href="https://arxiv.org/abs/2505.15917" target="_blank" rel="noopener"><b>How to factor 2048 bit RSA integers with less than a million noisy qubits</b><span>Craig Gidney, 2025 preprint</span></a>
+      <a href="https://csrc.nist.gov/projects/post-quantum-cryptography" target="_blank" rel="noopener"><b>NIST Post-Quantum Cryptography</b><span>the standards to migrate to</span></a>
+      <a href="https://www.darpa.mil/news/2026/four-more-teams-enter-quantum-benchmarking-initiative-final-stage" target="_blank" rel="noopener"><b>DARPA Quantum Benchmarking Initiative</b><span>can anyone reach utility scale by 2033? Oct 2026 update</span></a>
+      <a href="https://idvorkin-ai-tools.github.io/3b1b-entropy-field-map/" target="_blank" rel="noopener"><b>Entropy, mapped</b><span>a sibling field map, if you liked the information-theory angle</span></a>
+    </div>
+  </section>
+</main>
+<footer>Quantum Computing, Mapped · original explanation written November 2026 · current-state claims checked against primary sources on 15 Nov 2026; company announcements are labelled as such.</footer>
+<script>
+(function(){
+  var KEY='quantum-field-map-progress';var st={};try{st=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+  var boxes=document.querySelectorAll('.check');
+  function render(){var n=0;boxes.forEach(function(b){var on=!!st[b.dataset.p];b.classList.toggle('on',on);if(on)n++});
+    var p=document.getElementById('progress');if(p)p.textContent=n?n+' of 9 parts done. Tick a page when you have worked through it; this browser remembers.':'Tick a page when you have worked through it; this browser remembers.'}
+  boxes.forEach(function(b){b.addEventListener('click',function(){st[b.dataset.p]=!st[b.dataset.p];try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}render()})});
+  render();
+})();
+</script>
+</body>
+</html>

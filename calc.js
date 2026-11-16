@@ -20,7 +20,7 @@
     '<h3>Physical qubits per logical qubit</h3>' +
     '<div class="presets"></div>' +
     '<label>Physical error rate per operation, p <output id="qc-p"></output><input id="qc-pi" type="range" min="-4" max="-1.7" step="0.02" aria-label="physical error rate, log scale"></label>' +
-    '<label>Logical qubits the algorithm needs, N <output id="qc-n"></output><input id="qc-ni" type="range" min="1" max="4" step="0.01" aria-label="logical qubits, log scale"></label>' +
+    '<label>Logical qubits the algorithm needs, N <output id="qc-n"></output><input id="qc-ni" type="range" min="1" max="4" step="any" aria-label="logical qubits, log scale"></label>' +
     '<label>Error-correction rounds in the whole run, R <output id="qc-r"></output><input id="qc-ri" type="range" min="3" max="13" step="0.1" aria-label="rounds, log scale"></label>' +
     '<div class="out">' +
       '<div><div class="k">Λ = p_th / p</div><div class="v" id="qc-lam"></div></div>' +

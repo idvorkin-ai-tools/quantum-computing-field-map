@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>06 Challenges of Quantum Computation — Quantum Computing, Mapped</title>
+<meta name="description" content="Noise, the threshold theorem, the surface code and its overhead, magic states, real-time decoding, qLDPC codes, and why 'logical qubit' needs a footnote." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>QUANTUM&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#how">← field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">PART 06 · HOW IT WORKS</span><span class="mono">12 min read</span></div>
+  <h1>Challenges of Quantum Computation</h1>
+  <div class="authors">Quantum Computing, Mapped · part 06 of 09 · current to November 2026</div>
+
+  <div class="tldr"><b>TL;DR —</b> Why don't we already have the machines page 05 needs? Because physical qubits fail roughly once every thousand operations, and the useful algorithms need billions of operations to run clean. Error correction closes that gap only below a threshold error rate, and it costs hundreds to thousands of physical qubits per logical qubit, plus expensive "magic" for T gates, plus a classical decoder that must keep pace in real time. The one thing to remember: the field's progress is measured in physical error rate <span class="mono">p</span> and overhead per logical qubit, not in raw qubit count.</div>
+
+  <p class="lead">Page 04 gave you a perfect machine: unitaries applied exactly, measurements that return honest Born-rule samples. Page 05 priced the algorithms on that machine. This page is the bill for building it out of real hardware. It is also the lens for the rest of the map: once you know what a code distance, a threshold and a post-selection rate are, the announcements on pages 07 and 08 read very differently.</p>
+
+  <h2 id="noise">Noise: continuous errors on a fragile state</h2>
+
+  <p>A classical bit is a voltage well separated from the other voltage; small disturbances get snapped back by every gate. A qubit has no such restoring force. Its state <span class="mono">α|0⟩ + β|1⟩</span> lives on a continuum, and every unwanted interaction with the environment nudges it.</p>
+
+  <p>Two textbook time constants describe how fast an idle qubit forgets:</p>
+  <ul>
+    <li><b>T1 (relaxation)</b> — how long before <span class="mono">|1⟩</span> decays to <span class="mono">|0⟩</span> by losing energy to the environment. An amplitude-damping process.</li>
+    <li><b>T2 (dephasing)</b> — how long the relative phase <span class="mono">φ</span> between <span class="mono">|0⟩</span> and <span class="mono">|1⟩</span> survives. Random drifts in the qubit frequency smear <span class="mono">φ</span> until the superposition behaves like a coin flip. Always <span class="mono">T2 ≤ 2·T1</span>.</li>
+  </ul>
+
+  <p>What matters is the ratio of coherence time to gate time. Transmons cohere for tens to hundreds of microseconds and gate in tens of nanoseconds; trapped ions cohere for seconds but gate far slower. Both land in the same regime: a two-qubit gate error <span class="mono">p</span> around 10⁻³, sometimes a bit better.</p>
+
+  <p>Gates add their own errors: a pulse meant to rotate by π rotates by π + ε, neighbours crosstalk, transmons leak into <span class="mono">|2⟩</span>, atoms fall out of traps, and measurement misreads.</p>
+
+  <p>"Errors are continuous" sounded fatal in the 1990s: infinitely many possible errors, and you cannot look at the state without collapsing it. The resolution is <b>error discretisation</b>. Any single-qubit error operator can be written as</p>
+
+  <div class="math">E = e₀·I + e₁·X + e₂·Y + e₃·Z</div>
+
+  <p>because the Paulis span all 2×2 matrices. If you measure carefully chosen <em>parities</em> of several qubits rather than the qubits themselves, that measurement projects the continuous error onto one of the discrete Pauli branches, tells you which one, and leaves the encoded information untouched. Correct the Pauli and you have corrected the continuous error. Bit flips (X) and phase flips (Z) are all you need to handle; Y = iXZ is both.</p>
+
+  <h2 id="threshold">The threshold theorem: physical vs logical error</h2>
+
+  <p>Precise vocabulary first, because announcements blur it.</p>
+  <ul>
+    <li><b>Physical error rate <span class="mono">p</span></b> — the probability that one physical operation (a gate, an idle step, a measurement) introduces an error. Usually quoted as the two-qubit gate error, the worst of the lot.</li>
+    <li><b>Logical qubit</b> — one qubit's worth of information spread across many physical qubits by a code, so that no small set of physical failures can change it.</li>
+    <li><b>Logical error rate <span class="mono">p_L</span></b> — the probability that the encoded information is corrupted per round of error correction (for memory) or per logical gate. Which one is quoted matters; memory is the easy case.</li>
+    <li><b>Code distance <span class="mono">d</span></b> — the smallest number of physical errors that can silently turn one valid codeword into another. A distance-<span class="mono">d</span> code corrects up to <span class="mono">⌊(d−1)/2⌋</span> errors and <em>detects</em> up to <span class="mono">d−1</span>.</li>
+  </ul>
+
+  <p>The <b>threshold theorem</b> (Aharonov and Ben-Or; Knill, Laflamme and Zurek; Kitaev, all in the late 1990s) says: if every physical component fails independently with probability below some constant <span class="mono">p_th</span>, then you can make the logical error rate as small as you like with only polylogarithmic overhead, by growing the code. Below threshold, adding qubits helps. Above it, adding qubits adds more ways to fail than the code can catch, and a bigger code is worse.</p>
+
+  <p>Intuition from the classical repetition code: store three copies and majority-vote. It fails only if two flip, probability about <span class="mono">3p²</span>, and with <span class="mono">d</span> copies the failure rate scales like <span class="mono">p^((d+1)/2)</span>. Quantum codes keep that exponent but must catch both X and Z errors with noisy measurements, which pushes the threshold from tens of percent down to about one percent.</p>
+
+  <h2 id="surface">The surface code, and what it costs</h2>
+
+  <p>The surface code is the workhorse: its threshold is high (about 1%) and it needs only nearest-neighbour interactions on a 2D grid, exactly what a superconducting chip offers.</p>
+
+  <p>Lay out <span class="mono">d²</span> data qubits on a <span class="mono">d × d</span> grid. Between them sit <span class="mono">d² − 1</span> measure qubits. Each measure qubit repeatedly checks one <b>stabilizer</b>: the product <span class="mono">XXXX</span> or <span class="mono">ZZZZ</span> of its (up to four) data-qubit neighbours. A valid codeword is a +1 eigenstate of every stabilizer, so in the absence of errors every check returns +1. An X error on one data qubit flips the neighbouring Z-type checks; a Z error flips the X-type checks. The pattern of flipped checks is the <b>syndrome</b>. Crucially, the checks commute with the logical operators, so measuring them reveals where errors are without revealing the encoded state.</p>
+
+  <p>One <b>round</b> (or cycle) of <b>syndrome extraction</b> is: entangle each measure qubit with its four neighbours by four CNOT or CZ gates, measure the measure qubits, reset them. Rounds repeat about once a microsecond on superconducting hardware. Measurements are noisy too, so you compare syndromes across rounds: what the decoder actually sees is a 3D spacetime pattern of "detection events" where a check changed value.</p>
+
+  <p>The <b>decoder</b> is a classical algorithm that takes those events and infers the most likely set of physical errors. For the surface code, errors create pairs of detection events at the ends of error chains, so decoding is essentially minimum-weight perfect matching on a graph: pair up the events with the shortest total chain. A logical error happens only when the real errors form a chain stretching across the whole patch, which needs about <span class="mono">d/2</span> faults to fool the matcher. That gives the scaling used throughout this site:</p>
+
+  <div class="math">p_L ≈ 0.1 · (p / p_th)^((d+1)/2)
+p_th ≈ 0.01
+physical qubits per patch = d² + (d² − 1) = 2d² − 1</div>
+
+  <p>Here <span class="mono">p_L</span> is per logical qubit per round, and the factor 0.1 is an empirical prefactor. Define the suppression factor <span class="mono">Λ = p_th / p</span>: every time <span class="mono">d</span> grows by 2, <span class="mono">p_L</span> drops by a factor <span class="mono">Λ</span>. At <span class="mono">p = 10⁻³</span>, <span class="mono">Λ = 10</span>, and each step of distance buys one decimal digit of reliability. At <span class="mono">p = 5×10⁻³</span>, <span class="mono">Λ = 2</span> and you need twice as many distance steps per digit, each step costing quadratically more qubits.</p>
+
+  <p>Real hardware is measured against this. Google's Willow chip ran distance 3, 5 and 7 surface-code memories and saw logical error fall by <span class="mono">Λ ≈ 2.14</span> per step, with the distance-7 logical qubit outliving the best physical qubit by about 2.4× (<a class="lnk" href="https://www.nature.com/articles/s41586-024-08449-y" target="_blank" rel="noopener">Google Quantum AI, Nature 2024</a> <span class="tag peer">peer-reviewed</span>). A distance-7 patch is <span class="mono">2·49 − 1 = 97</span> qubits, which is why that experiment fits on a 105-qubit chip. A 2026 follow-up, with a reinforcement-learning controller retuning the chip during error correction, reached <span class="mono">7.72×10⁻⁴</span> logical error per cycle at distance 7 (<a class="lnk" href="https://www.nature.com/articles/s41586-026-10759-2" target="_blank" rel="noopener">Nature, July 2026</a> <span class="tag peer">peer-reviewed</span>). Λ ≈ 2 is "below threshold", genuinely, but only just: the model above says you want Λ near 10 before the overhead becomes comfortable.</p>
+
+  <h3>Worked example</h3>
+
+  <p>Suppose <span class="mono">p = 10⁻³</span> and an algorithm needs every logical qubit to survive with <span class="mono">p_L ≈ 10⁻¹²</span> per round (a thousand logical qubits over a billion rounds, give or take, with a ~10% chance of any failure in the run).</p>
+
+  <div class="math">p_L(d) = 0.1 · (10⁻³ / 10⁻²)^((d+1)/2)
+       = 10^(−1 − (d+1)/2)
+want ≤ 10⁻¹²  ⇒  (d+1)/2 ≥ 11  ⇒  d = 21
+qubits per logical = 2·21² − 1 = 881  ≈ 900</div>
+
+  <p>Nine hundred physical qubits for one good one, just to <em>store</em> it; routing space and the factories below typically multiply the total by a small factor.</p>
+
+  <p>The calculator below runs exactly this model. It searches for the smallest odd <span class="mono">d</span> such that <span class="mono">N · R · p_L(d) ≤ 0.1</span>, where <span class="mono">N</span> is the number of logical qubits and <span class="mono">R</span> the number of rounds in the run, then multiplies by <span class="mono">2d² − 1</span>.</p>
+
+  <div id="qec-calc" class="calc"></div>
+  <script src="../calc.js" defer></script>
+
+  <p><b>What to try.</b> The default "Starling-class run" (200 logical qubits, 10⁸ rounds, <span class="mono">p = 10⁻³</span>) lands at <span class="mono">d = 21</span>, 881 physical per logical, about 176k physical qubits. Click "RSA-2048-class run" (~1,400 logical qubits, ~4×10¹¹ rounds, which is about five days at 1 µs per round): <span class="mono">d = 29</span>, 1,681 per logical, about 2.4M physical. Gidney's 2025 estimate does the same job with under a million qubits (<a class="lnk" href="https://arxiv.org/abs/2505.15917" target="_blank" rel="noopener">arXiv 2505.15917</a> <span class="tag pre">preprint</span>) by using yoked surface codes for idle storage and magic-state cultivation, which tells you how much engineering lives outside this plain model. Now click "Better hardware": the same run at <span class="mono">p = 10⁻⁴</span> needs only <span class="mono">d = 15</span>, 449 per logical, about 630k. A tenfold better physical qubit cuts the machine almost fourfold. Finally drag <span class="mono">p</span> right, toward 1%: watch <span class="mono">Λ</span> approach 1 and <span class="mono">d</span> explode, until the tool tells you no distance works. That cliff is the threshold.</p>
+
+  <h2 id="magic">Magic states: the cost of the T gate</h2>
+
+  <p>The surface code makes Clifford operations (H, S, CNOT, Pauli measurements) cheap and fault tolerant, mostly by moving patch boundaries around ("lattice surgery"). But page 04's Gottesman–Knill theorem says Cliffords alone are classically simulable. You need a non-Clifford gate, normally T, and no 2D topological code like the surface code can apply it transversally.</p>
+
+  <p>The standard fix is to prepare a resource state <span class="mono">|T⟩ = T|+⟩ = (|0⟩ + e^{iπ/4}|1⟩)/√2</span> on the side and consume it via a short Clifford-plus-measurement gadget that applies T to your data. Preparing <span class="mono">|T⟩</span> directly gives an error near <span class="mono">p</span>, far too noisy. <b>Magic-state distillation</b> (Bravyi and Kitaev, 2004) takes many noisy copies and, using only Cliffords, outputs fewer, cleaner ones. The classic 15-to-1 protocol turns 15 states of error <span class="mono">ε</span> into one of error about <span class="mono">35ε³</span>; stack two levels to get from 10⁻³ to below 10⁻¹². The <b>magic-state factory</b> doing this can be larger than the algorithm's own qubits, and an algorithm's T-count becomes its main runtime cost.</p>
+
+  <p>Recent work shrinks this. <b>Magic-state cultivation</b> grows a T state inside a small code, checking it repeatedly and discarding failures, and claims T states nearly as cheap as a CNOT in qubit-rounds (<a class="lnk" href="https://arxiv.org/abs/2409.17595" target="_blank" rel="noopener">Gidney, Shutty and Jones, 2024</a>). It is one reason the RSA estimate fell from 20M qubits (2019) to under 1M (2025).</p>
+
+  <h2 id="engineering">Real-time decoding and the engineering wall</h2>
+
+  <p><b>Decoding is a hard real-time problem.</b> At a microsecond per round, a distance-21 patch produces hundreds of syndrome bits per microsecond, per logical qubit. The decoder must keep up or a backlog grows without bound, and every T gadget stalls until its measurement is decoded. That puts a latency budget of order a microsecond on matching or its approximations, running on FPGAs or ASICs next to the cryostat (<a class="lnk" href="https://arxiv.org/abs/2303.00054" target="_blank" rel="noopener">Battistel et al., 2023</a>). Willow's below-threshold experiment already included real-time decoding; doing it for thousands of patches at once, with lattice surgery between them, is unsolved at scale.</p>
+
+  <p><b>Wiring and cryogenics.</b> A transmon chip sits near 10 millikelvin in a dilution refrigerator, with a few coaxial lines per qubit running from room temperature. Fine for hundreds of qubits, not obviously for a million: heat load, cable volume and cost all scale linearly. The routes out (cryogenic CMOS control, multiplexed readout, linking fridges with microwave or optical interconnects) each carry a fidelity penalty.</p>
+
+  <p><b>Other modalities have other walls.</b> Ions and atoms need stable lasers and optics rather than cables, but their rounds are far slower, so the same algorithm runs much longer; atoms must be reloaded mid-run; photons are lost rather than flipped. None is a physics no-go; all are years of engineering.</p>
+
+  <h2 id="qldpc">qLDPC codes: less overhead, harder wiring</h2>
+
+  <p>The surface code is wasteful in a precise sense: each patch encodes one logical qubit, so overhead scales like <span class="mono">d²</span> per qubit. Quantum low-density parity-check (qLDPC) codes keep every check small (each involves only a few qubits) but are not restricted to a flat local grid, which lets one block encode many logical qubits at once.</p>
+
+  <p>IBM's "gross" code is the flagship example: a bivariate-bicycle code written <span class="mono">[[144, 12, 12]]</span> (144 data qubits, 12 logical qubits, distance 12), using 288 physical qubits including the check qubits, roughly a tenth of what surface-code patches would need for similar protection at <span class="mono">p ≈ 10⁻³</span> (<a class="lnk" href="https://arxiv.org/abs/2308.07915" target="_blank" rel="noopener">Bravyi et al., Nature 2024</a> <span class="tag peer">peer-reviewed</span>). IBM's fault-tolerance roadmap is built on these codes: Starling, 200 logical qubits running 100 million gates by 2029 (<a class="lnk" href="https://www.ibm.com/quantum/blog/large-scale-ftqc" target="_blank" rel="noopener">IBM, 2025</a> <span class="tag co">company claim</span>). Applied to cryptanalysis, a 2026 architecture study puts RSA-2048 under 100,000 physical qubits with the same 10⁻³ and 1 µs assumptions as Gidney's estimate (<a class="lnk" href="https://arxiv.org/abs/2602.11457" target="_blank" rel="noopener">Iceberg Quantum, 2026</a> <span class="tag pre">preprint</span>).</p>
+
+  <p>The catch is connectivity. In the gross code each qubit talks to six others and some of those links are long range, so a flat nearest-neighbour chip will not do. Superconducting designs need multi-layer couplers that reach across the chip; neutral-atom machines can physically move atoms to bring distant qubits together, as the reconfigurable 448-atom Harvard/MIT/QuEra architecture does (<a class="lnk" href="https://www.nature.com/articles/s41586-025-09848-5" target="_blank" rel="noopener">Nature, 2025</a> <span class="tag peer">peer-reviewed</span>), and trapped ions shuttle ions or use all-to-all gates. qLDPC decoders are also harder than matching, and logical gates between qubits sharing one block are awkward. You trade qubit count for wiring, decoder complexity and gate design.</p>
+
+  <div class="callout"><b>Carry this away:</b> the cost of a fault-tolerant computer is set by three numbers, not one. The physical error rate <span class="mono">p</span> fixes Λ; Λ and the run length fix the distance <span class="mono">d</span>; <span class="mono">d</span> and the code fix the physical qubits per logical qubit. A headline qubit count without <span class="mono">p</span>, <span class="mono">d</span> and the code is not a measurement of progress.</div>
+
+  <h2 id="nisq">NISQ, error mitigation, and the loose "logical qubit"</h2>
+
+  <p>Preskill named the current period <b>NISQ</b>, noisy intermediate-scale quantum: tens to a few hundred qubits, no error correction, circuits limited to roughly <span class="mono">1/p</span> gates before noise wins (<a class="lnk" href="https://arxiv.org/abs/1801.00862" target="_blank" rel="noopener">Preskill, 2018</a>). Whether such machines do anything commercially useful was, and still is, an open question.</p>
+
+  <p><b>Error mitigation</b> is the NISQ toolbox: zero-noise extrapolation (run the circuit at deliberately amplified noise and extrapolate the expectation value to zero noise) and probabilistic error cancellation (sample from a quasi-probability mix of circuits that inverts a learned noise model) (<a class="lnk" href="https://arxiv.org/abs/1612.02058" target="_blank" rel="noopener">Temme, Bravyi and Gambetta, 2017</a>). It is useful, but it is not error correction. It fixes expectation values, not individual shots, and its sampling cost grows roughly like <span class="mono">e^(c·p·G)</span> in the number of gates <span class="mono">G</span>: exponential in circuit size, so it only stretches circuits by a modest constant factor.</p>
+
+  <p>Now the vocabulary trap. A <b>distance-2</b> code can detect one error but cannot correct it; all you can do is throw the run away. That is <b>error detection with post-selection</b>, and it makes results look clean while the discard rate grows exponentially with circuit size. A distance-7 code under active correction is a different object. Both get called "logical qubits" in press releases:</p>
+  <ul>
+    <li>Infleqtion's 30 entangled logical qubits use ten blocks of the <span class="mono">[[8,3,2]]</span> code: distance 2, detection, post-selected (<a class="lnk" href="https://infleqtion.com/infleqtion-achieves-30-entangled-logical-qubits-on-its-sqale-quantum-computer/" target="_blank" rel="noopener">Infleqtion, 2026</a> <span class="tag co">company claim</span>).</li>
+    <li>IBM and the University of Chicago's 70-logical-qubit headline rests on error detection with syndrome post-selection, not correction (<a class="lnk" href="https://arxiv.org/abs/2607.25941" target="_blank" rel="noopener">arXiv 2607.25941</a> <span class="tag pre">preprint</span>). Page 08 tells the rest of that story.</li>
+    <li>Quantinuum's colour-code result on Helios is genuine correction at distances 3, 5 and 7, with Λ ≈ 12 and about <span class="mono">5×10⁻⁶</span> memory error per cycle at d = 7, using up to 37 physical qubits per logical. But that is a memory figure; the logical two-qubit gate was demonstrated at d = 5 with error about <span class="mono">7×10⁻⁵</span> (<a class="lnk" href="https://thequantuminsider.com/2026/10/19/quantinuum-reports-a-10x-reduction-in-logical-error-rate-on-helios/" target="_blank" rel="noopener">The Quantum Insider on Quantinuum's report, 2026</a> <span class="tag pre">preprint</span> <span class="tag co">company claim</span>).</li>
+  </ul>
+
+  <p>Each paper says what it did; the headlines compress it. When you read "N logical qubits", ask: what distance, detection or correction, what fraction of shots were discarded, memory or gates, and is it peer reviewed?</p>
+
+  <h2 id="sources">Sources and further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://arxiv.org/abs/1208.0928" target="_blank" rel="noopener">Surface codes: Towards practical large-scale quantum computation</a> — Fowler, Mariantoni, Martinis, Cleland (2012) · the long, readable engineering introduction to stabilizers, syndromes, matching and overhead.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/9906129" target="_blank" rel="noopener">Fault-Tolerant Quantum Computation With Constant Error Rate</a> — Aharonov, Ben-Or (1999) · one of the original threshold-theorem proofs.</li>
+    <li><a href="https://www.nature.com/articles/s41586-024-08449-y" target="_blank" rel="noopener">Quantum error correction below the surface code threshold</a> — Google Quantum AI (2024) · Willow, distance 7, Λ ≈ 2.14, real-time decoding.</li>
+    <li><a href="https://www.nature.com/articles/s41586-026-10759-2" target="_blank" rel="noopener">Reinforcement learning control of quantum error correction</a> — Google Quantum AI (2026) · calibration as a live control problem; 7.72×10⁻⁴ per cycle at d = 7.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/0403025" target="_blank" rel="noopener">Universal Quantum Computation with ideal Clifford gates and noisy ancillas</a> — Bravyi, Kitaev (2004) · magic-state distillation.</li>
+    <li><a href="https://arxiv.org/abs/2409.17595" target="_blank" rel="noopener">Magic state cultivation: growing T states as cheap as CNOT gates</a> — Gidney, Shutty, Jones (2024) · the cheaper alternative to distillation.</li>
+    <li><a href="https://arxiv.org/abs/2505.15917" target="_blank" rel="noopener">How to factor 2048 bit RSA integers with less than a million noisy qubits</a> — Gidney (2025) · compare its numbers with the calculator's RSA preset.</li>
+    <li><a href="https://arxiv.org/abs/2308.07915" target="_blank" rel="noopener">High-threshold and low-overhead fault-tolerant quantum memory</a> — Bravyi, Cross, Gambetta et al. (2024) · the bivariate-bicycle "gross" code behind IBM's roadmap.</li>
+    <li><a href="https://arxiv.org/abs/2303.00054" target="_blank" rel="noopener">Real-Time Decoding for Fault-Tolerant Quantum Computing: Progress, Challenges and Outlook</a> — Battistel, Chamberland, Johar et al. (2023) · the decoder latency problem, surveyed.</li>
+    <li><a href="https://arxiv.org/abs/1612.02058" target="_blank" rel="noopener">Error mitigation for short-depth quantum circuits</a> — Temme, Bravyi, Gambetta (2017) · zero-noise extrapolation and probabilistic error cancellation.</li>
+    <li><a href="https://arxiv.org/abs/1801.00862" target="_blank" rel="noopener">Quantum Computing in the NISQ era and beyond</a> — Preskill (2018) · the essay that named the era and set honest expectations for it.</li>
+  </ul>
+
+  <h2 id="exercises">Check yourself</h2>
+  <ol class="exercises">
+    <li><b>Price a worse qubit</b> — Redo the worked example with <span class="mono">p = 2×10⁻³</span> and the same target <span class="mono">p_L ≈ 10⁻¹²</span>. A good answer finds Λ = 5, solves <span class="mono">0.1·5^(−(d+1)/2) ≤ 10⁻¹²</span> to get <span class="mono">(d+1)/2 ≥ 16</span>, so <span class="mono">d = 31</span> (since <span class="mono">5¹⁵ ≈ 3×10¹⁰</span> falls short of 10¹¹ and <span class="mono">5¹⁶ ≈ 1.5×10¹¹</span> clears it), and notes the cost per logical jumps from 881 to <span class="mono">2·31² − 1 = 1,921</span>: a 2× worse qubit costs about 2.2× the hardware.</li>
+    <li><b>See a threshold appear</b> <span class="code">code</span> — In numpy, simulate the classical repetition code: for <span class="mono">d ∈ {3, 5, 7, 9}</span> and <span class="mono">p</span> from 0.05 to 0.6, flip each of <span class="mono">d</span> bits with probability <span class="mono">p</span> over 10⁵ trials, majority-vote, and plot the failure rate against <span class="mono">p</span> on log axes. A good answer shows the curves crossing at <span class="mono">p = 0.5</span>, larger <span class="mono">d</span> winning below it and losing above it, and slopes near <span class="mono">(d+1)/2</span> at small <span class="mono">p</span>. Then explain why the quantum surface code's crossing sits near 1% instead of 50%.</li>
+    <li><b>Read a press release</b> — A hypothetical announcement says "50 logical qubits on 100 physical qubits." Before you believe it means 48 fault-tolerant qubits, list the questions you need answered. A good answer notes that 2 physical per logical forces a very small code (distance 2 at most for most constructions), then asks: detection or correction; post-selection rate; memory or logical gates, and which gates; how many rounds; and whether there is a peer-reviewed paper.</li>
+    <li><b>Mitigation's bill</b> — Probabilistic error cancellation multiplies the number of shots needed by roughly <span class="mono">e^(2·p·G)</span>. With <span class="mono">p = 10⁻³</span>, how many gates <span class="mono">G</span> can you run before the overhead passes 10⁶? A good answer gets <span class="mono">G ≈ ln(10⁶)/(2·10⁻³) ≈ 6,900</span> and contrasts that with the 10⁸–10¹² operations page 05's algorithms need.</li>
+  </ol>
+
+  <div class="callout">Next: <a class="lnk" href="p07.html">07 Dominant Institutions in Quantum Computing</a> · Back to the <a class="lnk" href="../index.html#how">map</a>.</div>
+</main>
+<footer>Quantum Computing, Mapped · original explanation, written November 2026. Current-state claims link to their sources; company claims are marked as such.</footer>
+</body>
+</html>

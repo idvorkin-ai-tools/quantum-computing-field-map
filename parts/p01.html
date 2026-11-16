@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>01 Fundamentals of Classical Computation — Quantum Computing, Mapped</title>
+<meta name="description" content="Bits, NAND, circuits, reversible gates, probability vectors and stochastic matrices, P/BPP/NP: the classical model quantum computing generalises." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>QUANTUM&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#why">← field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">PART 01 · WHY QUANTUM</span><span class="mono">12 min read</span></div>
+  <h1>Fundamentals of Classical Computation</h1>
+  <div class="authors">Quantum Computing, Mapped · part 01 of 09 · current to November 2026</div>
+
+  <div class="tldr"><b>TL;DR —</b> What exactly is the model that quantum computing generalises? A classical computer is a circuit of gates acting on bits; with randomness added, its state is a vector of 2ⁿ non-negative probabilities that sum to 1, and every step is a stochastic matrix. Reversible gates are permutation matrices, and that is the doorway to quantum gates, which are unitary matrices with complex entries. The one thing to remember: classical probabilistic computation already has an exponentially large state vector, but you never need to store it, because you can just sample. Quantum mechanics takes that shortcut away.</div>
+
+  <p class="lead">Every claim later in this map ("exponential speedup", "BQP", "the T gate is the expensive part", "you can't read out the amplitudes") is a statement about how quantum computation differs from classical computation. So this page pins the classical model down precisely enough to be contrasted against: Boolean circuits, reversible computing, probabilistic computing written as linear algebra, and the complexity classes that tell us what is efficient. Page 04 will reuse every piece of notation here and change just two things, the norm and the sign of the numbers.</p>
+
+  <h2 id="bits-gates">Bits, gates and universality</h2>
+  <p>A bit is an element of {0,1}. An n-bit register holds one of 2ⁿ strings x ∈ {0,1}ⁿ. A Boolean function is any map <span class="mono">f : {0,1}ⁿ → {0,1}ᵐ</span>, and computation is building such maps out of small pieces.</p>
+  <p>The small pieces are gates: NOT, AND, OR, XOR, NAND. A gate set is <em>universal</em> if circuits over it can express every Boolean function. NAND alone is universal, which you can check in three lines:</p>
+  <div class="math">NOT a   = NAND(a, a)
+AND a b = NOT(NAND(a, b))
+OR  a b = NAND(NOT a, NOT b)</div>
+  <p>AND, OR and NOT give every truth table (write it in disjunctive normal form), so NAND gives every truth table. There is one more ingredient classical circuits use so routinely that nobody lists it: <b>fan-out</b>. A wire can be split and the bit copied for free. Hold on to that; on page 03 the no-cloning theorem says the quantum version of this free copy does not exist.</p>
+  <p>Universality says nothing about cost. Counting arguments (Shannon, 1949) show that almost every Boolean function on n inputs needs a circuit of size about <span class="mono">2ⁿ/n</span>. The functions we care about are the rare ones with small circuits. Quantum computing has exactly the same story: a small universal gate set can approximate any unitary, but almost every unitary needs exponentially many gates, and the interesting algorithms are the rare structured exceptions.</p>
+
+  <h2 id="circuits">Circuits: the model you will generalise</h2>
+  <p>A circuit is a directed acyclic graph: inputs at the leaves, gates at the internal nodes, outputs at the roots. Two numbers describe it: <b>size</b> (number of gates, a proxy for time and energy) and <b>depth</b> (longest path, a proxy for parallel time). To talk about algorithms rather than single circuits we use <em>uniform circuit families</em>: one circuit Cₙ per input length n, each produced by an efficient program. Polynomial-size uniform circuit families compute exactly the class P, so nothing is lost by thinking in circuits instead of Turing machines.</p>
+  <p>The quantum circuit model keeps this picture almost verbatim. Wires become qubits, gates become small unitary matrices acting on one, two or three wires, and size and depth keep their meaning. When a later page quotes a number of error-correction rounds or a T-gate count, it is a circuit-size or circuit-depth statement in this sense.</p>
+
+  <h2 id="reversible">Reversible computing: the bridge to unitaries</h2>
+  <p>AND is irreversible: from the output 0 you cannot tell whether the inputs were 00, 01 or 10. Information is destroyed. Landauer (1961) argued that destroying information has a physical floor: erasing one bit in an environment at temperature T dissipates at least</p>
+  <div class="math">E_min = k_B · T · ln 2
+      ≈ 2.9 × 10⁻²¹ J   at T = 300 K</div>
+  <p>That floor is many orders of magnitude below what real CMOS dissipates per operation, so it is not today's engineering limit, but it was measured directly in 2012 with a single colloidal particle in an optical trap (Bérut et al., linked below). The point for us is conceptual: a computation that never erases anything has no such floor, and a computation that never erases anything is a bijection on bit strings.</p>
+  <p>Bennett (1973) showed every computation can be made reversible with modest overhead: compute forward keeping all intermediate bits, copy the answer out with CNOTs, then run the computation backwards to <em>uncompute</em> the garbage. That compute–copy–uncompute pattern reappears inside nearly every quantum algorithm, because leftover garbage in a quantum register spoils interference.</p>
+  <p>The workhorse reversible gate is the <b>Toffoli</b> (controlled-controlled-NOT):</p>
+  <div class="math">Toffoli(a, b, c) = (a, b, c ⊕ (a·b))
+Toffoli(a, b, 1) = (a, b, NAND(a, b))</div>
+  <p>With an ancilla bit preset to 1 it computes NAND, so Toffoli is universal for reversible classical computation (given ancillas). Fredkin and Toffoli developed this "conservative logic" programme in the early 1980s. The two-bit reversible gate you will meet constantly is <b>CNOT</b>: <span class="mono">(a, b) → (a, a ⊕ b)</span>. With b = 0 it is fan-out, a copy of a.</p>
+  <p>Now write a reversible gate as a matrix. Index the 2ⁿ basis strings, and let the gate's matrix have a 1 in row g(x), column x. Because g is a bijection, every row and every column has exactly one 1: it is a <b>permutation matrix</b>. Toffoli is the 8×8 identity with the last two rows swapped (inputs 110 and 111). CNOT on two bits is:</p>
+  <div class="math">        00 01 10 11
+CNOT = [ 1  0  0  0 ]  00
+       [ 0  1  0  0 ]  01
+       [ 0  0  0  1 ]  10
+       [ 0  0  1  0 ]  11</div>
+  <p>A permutation matrix P satisfies <span class="mono">PᵀP = I</span>. It is a real orthogonal matrix, and therefore a unitary one, that happens to contain only 0s and 1s. Quantum gates are what you get when you keep <span class="mono">U†U = I</span> and allow any complex entries. The classical reversible gates survive unchanged as a subset: X is NOT, and CNOT and Toffoli keep their names and their matrices.</p>
+
+  <h2 id="probabilistic">Probabilistic computation as linear algebra</h2>
+  <p>This is the section page 04 is built against, so it is worth being exact.</p>
+  <p>Let a computer flip coins. After some steps its n-bit register is not in one string but in a <em>distribution</em> over strings. Write that distribution as a vector with one entry per string:</p>
+  <div class="math">p = (p_x),  x ∈ {0,1}ⁿ,   2ⁿ real entries
+p_x ≥ 0,   Σ_x p_x = 1   (L1 norm = 1)</div>
+  <p>A deterministic start in string 000 is the basis vector with a 1 in position 000. Every step of the computation is a linear map <span class="mono">p → M p</span> where M is <b>column-stochastic</b>: non-negative entries, each column summing to 1. Column x is the output distribution when the input is x. Stochastic matrices are exactly the linear maps that send probability vectors to probability vectors, that is, that preserve non-negativity and the L1 norm.</p>
+  <p>Three examples on a single bit:</p>
+  <div class="math">NOT  = [ 0 1 ]    COIN = [ ½ ½ ]    RESET = [ 1 1 ]
+       [ 1 0 ]           [ ½ ½ ]            [ 0 0 ]</div>
+  <p>NOT is a permutation (reversible). RESET sends everything to 0 (irreversible, erases a bit). COIN replaces the bit with a fair random bit. Gates on separate bits combine by the tensor (Kronecker) product: COIN on bit 1 of a two-bit register is <span class="mono">COIN ⊗ I</span>, a 4×4 stochastic matrix. Independent bits have product distributions, <span class="mono">p = p⁽¹⁾ ⊗ p⁽²⁾</span>; correlated bits (say, two bits that are always equal, each 50/50) do not factor. That is the classical shadow of entanglement.</p>
+  <p>Notice what COIN does twice: <span class="mono">COIN · COIN = COIN</span>. Once you have randomised a bit, no further stochastic step can make the randomness cancel back into certainty without looking at something. Probabilities only add, all the contributions are non-negative, and nothing ever subtracts. On page 04 the Hadamard gate plays COIN's role, and <span class="mono">H · H = I</span>: two randomising steps give back the start. That single difference, negative and complex numbers that can cancel, is called interference, and it is where every quantum speedup comes from.</p>
+
+  <svg viewBox="0 0 420 300" role="img" aria-label="For one bit, probability vectors lie on the straight segment p0 + p1 = 1; quantum states with real amplitudes lie on the unit circle a0² + a1² = 1, which includes negative values.">
+    <line x1="210" y1="20" x2="210" y2="240" stroke="#262C35" stroke-width="1.5"/>
+    <line x1="80" y1="130" x2="340" y2="130" stroke="#262C35" stroke-width="1.5"/>
+    <circle cx="210" cy="130" r="90" fill="none" stroke="#35CFE0" stroke-width="2" stroke-dasharray="5 4"/>
+    <line x1="300" y1="130" x2="210" y2="40" stroke="#F5A524" stroke-width="3"/>
+    <circle cx="300" cy="130" r="5" fill="#E7EBF1"/>
+    <circle cx="210" cy="40" r="5" fill="#E7EBF1"/>
+    <circle cx="255" cy="85" r="5" fill="#F5A524"/>
+    <circle cx="146.4" cy="66.4" r="5" fill="#35CFE0"/>
+    <text x="306" y="150" fill="#E7EBF1" font-family="IBM Plex Mono, monospace" font-size="12">bit = 0</text>
+    <text x="218" y="32" fill="#E7EBF1" font-family="IBM Plex Mono, monospace" font-size="12">bit = 1</text>
+    <text x="262" y="80" fill="#F5A524" font-family="IBM Plex Mono, monospace" font-size="12">fair coin (½, ½)</text>
+    <text x="22" y="60" fill="#35CFE0" font-family="IBM Plex Mono, monospace" font-size="12">(−1/√2, 1/√2)</text>
+    <text x="12" y="272" fill="#F5A524" font-family="IBM Plex Mono, monospace" font-size="11">amber: p₀ + p₁ = 1, p ≥ 0 (this page)</text>
+    <text x="12" y="290" fill="#35CFE0" font-family="IBM Plex Mono, monospace" font-size="11">cyan: a₀² + a₁² = 1, any sign (page 04)</text>
+    <text x="344" y="134" fill="#737D8B" font-family="IBM Plex Mono, monospace" font-size="11">x₀</text>
+    <text x="196" y="20" fill="#737D8B" font-family="IBM Plex Mono, monospace" font-size="11">x₁</text>
+  </svg>
+
+  <h2 id="sampling">The exponential vector you never have to store</h2>
+  <p>Here is the subtle part, and the reason quantum computing is not "just" probabilistic computing with a bigger vector. The probability vector of an n-bit randomized program has 2ⁿ entries. A 300-bit randomized algorithm has a distribution over more strings than there are atoms in the observable universe. Yet nobody has ever struggled to run one.</p>
+  <p>The reason is that the vector is a <em>description</em> of our ignorance, not something the machine has to hold. To simulate a randomized circuit you never multiply 2ⁿ×2ⁿ stochastic matrices. You draw the random bits, follow one trajectory, and output one sample. Each run costs time linear in circuit size, and the runs reproduce the distribution exactly. Sampling works because probabilities of different paths to the same output simply add: you can explore one path at a time and the totals come out right.</p>
+  <p>Quantum amplitudes for different paths to the same output also add, but they can have opposite signs and cancel. You cannot discover a cancellation by walking one path; you need the paths' amplitudes together. That is why a direct classical simulation of a quantum circuit seems to need the whole 2ⁿ-entry vector (or an equivalent exponential cost in some other currency, such as time or entanglement in a tensor network), and it is the cleanest one-sentence account of where a quantum advantage can come from.</p>
+
+  <div class="callout"><b>Carry this:</b> classical probabilistic state = a non-negative vector with L1 norm 1, evolved by stochastic matrices, and cheaply simulated by sampling one path at a time. Quantum state = a complex vector with L2 norm 1, evolved by unitary matrices, and paths can cancel, so the one-path-at-a-time shortcut fails. Reversible classical gates (permutation matrices) sit in both worlds.</div>
+
+  <h2 id="complexity">P, BPP, NP and the extended Church–Turing thesis</h2>
+  <p>Complexity classes are the vocabulary for "efficient". The three classical ones this map leans on:</p>
+  <div class="scroll-x"><table class="kv">
+    <tr><th>Class</th><th>Definition, informally</th><th>Example</th></tr>
+    <tr><td class="mono">P</td><td>Decided by a deterministic algorithm in polynomial time</td><td>Shortest paths, linear programming, primality (AKS, 2002)</td></tr>
+    <tr><td class="mono">BPP</td><td>Decided by a randomized polynomial-time algorithm that is right with probability ≥ 2/3 on every input</td><td>Polynomial identity testing; primality was here (Miller–Rabin) before it was known to be in P</td></tr>
+    <tr><td class="mono">NP</td><td>"Yes" answers have a polynomial-size certificate checkable in polynomial time</td><td>SAT, graph colouring, factoring (as a decision problem)</td></tr>
+  </table></div>
+  <p>The 2/3 in BPP is arbitrary: run the algorithm k times and take the majority, and the error falls exponentially in k (a Chernoff bound). P ⊆ BPP trivially, and most complexity theorists believe P = BPP, because good enough pseudorandom generators would let you derandomize everything. BQP, the quantum class on page 02, is defined exactly like BPP with the randomized circuit replaced by a quantum one.</p>
+  <p>NP is the class of problems with checkable answers. SAT is NP-complete (Cook–Levin, 1971): every NP problem reduces to it. Whether P = NP is open, and the working assumption is no. Factoring is a useful odd case: it is in NP (a factor is the certificate), but it is not believed NP-complete, and the best known classical algorithm, the general number field sieve, runs in sub-exponential time roughly</p>
+  <div class="math">exp( (64/9)^(1/3) · (ln N)^(1/3) · (ln ln N)^(2/3) )</div>
+  <p>That gap, between "not NP-complete" and "no known polynomial algorithm", is exactly the space Shor's algorithm (page 05) walks into. It is also why "quantum computers solve NP-complete problems" is the wrong mental model, a point page 02 makes carefully.</p>
+  <p>The <b>Church–Turing thesis</b> says every effectively computable function is computable by a Turing machine. Quantum computers do not challenge that; a classical machine can simulate a quantum one, just slowly. The <b>extended</b> Church–Turing thesis is the stronger claim that every physically reasonable model of computation can be simulated by a probabilistic Turing machine with only polynomial overhead. In other words, BPP is the ceiling on what physics can compute efficiently. Quantum computing is the serious challenge to the extended thesis: if large quantum computers work and factoring is not in BPP, the extended thesis is false.</p>
+
+  <h2 id="physics">Why simulating physics is exponential in general</h2>
+  <p>A classical system of n particles is described by O(n) numbers: positions and momenta. Simulating it costs polynomial time per step. A quantum system of n two-level particles (spins, say) is described by a state vector of 2ⁿ complex amplitudes. Store each as two 64-bit floats and the memory bill is</p>
+  <div class="math">n = 30  →  2³⁰ × 16 B ≈ 17 GB
+n = 40  →  2⁴⁰ × 16 B ≈ 17.6 TB
+n = 50  →  2⁵⁰ × 16 B ≈ 18 PB</div>
+  <p>Every additional particle doubles it. This is the observation behind Feynman's 1981 lecture "Simulating physics with computers" (published 1982), which page 02 unpacks: if nature does this bookkeeping for free, build computers out of the same stuff.</p>
+  <p>Two honest caveats. First, "in general" is doing work: chemists and physicists simulate many quantum systems well using structure, through density functional theory, tensor networks for weakly entangled systems, and quantum Monte Carlo. The exponential wall bites on <em>strongly correlated</em> systems, which is where the interesting chemistry and materials problems live. Second, the obvious escape, sampling as in the probabilistic case, runs into the sign problem: amplitudes (or the weights quantum Monte Carlo uses) go negative, samples cancel, and the statistical error blows up exponentially. Troyer and Wiese showed the fermionic sign problem is NP-hard in general: a polynomial-time general fix would put NP-complete problems in BPP, so none is expected. It is the same cancellation story as the previous section, now as a practical obstacle.</p>
+
+  <p><b>Where Moore's law fits.</b> For four decades transistor counts doubled roughly every two years (Moore's law), and until the mid-2000s Dennard scaling let each smaller transistor also run faster at the same power density. Dennard scaling ended around 2005 when leakage current made further voltage reductions impractical, which is why clock speeds plateaued and chips went multi-core. Transistor density kept improving more slowly.</p>
+  <p>This matters for quantum computing only in a limited way. Quantum computers are not a successor to CMOS for general workloads: they would not run your web server faster, and most problems have no known quantum speedup at all. The relevant claim is narrower: some problems are exponentially expensive for <em>any</em> classical machine, however much Moore's law delivers, and doubling classical hardware buys you one more simulated particle.</p>
+
+  <h2 id="sources">Sources and further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://doi.org/10.1007/BF02650179" target="_blank" rel="noopener">Simulating physics with computers</a> — Richard P. Feynman (1982) · the argument that quantum systems cost classical computers exponentially, and the proposal to use quantum hardware instead.</li>
+    <li><a href="https://doi.org/10.1038/nature10872" target="_blank" rel="noopener">Experimental verification of Landauer's principle linking information and thermodynamics</a> — A. Bérut et al., Nature (2012) · the k_B T ln 2 erasure floor measured on a single trapped colloidal particle.</li>
+    <li><a href="https://doi.org/10.1007/BF02084158" target="_blank" rel="noopener">The thermodynamics of computation, a review</a> — Charles H. Bennett (1982) · reversible computation, Landauer's principle and the compute–copy–uncompute trick, from the person who invented it.</li>
+    <li><a href="https://doi.org/10.1007/BF01857727" target="_blank" rel="noopener">Conservative logic</a> — Edward Fredkin and Tommaso Toffoli (1982) · reversible gates (Fredkin, Toffoli) as a universal basis for computation.</li>
+    <li><a href="https://theory.cs.princeton.edu/complexity/" target="_blank" rel="noopener">Computational Complexity: A Modern Approach</a> — Sanjeev Arora and Boaz Barak (2009) · standard textbook for P, BPP, NP, circuits, derandomization; a free draft is linked from the book page.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/0502072" target="_blank" rel="noopener">NP-complete problems and physical reality</a> — Scott Aaronson (2005) · a survey of whether any physical system, quantum included, could solve NP-complete problems efficiently; the extended Church–Turing thesis in practice.</li>
+    <li><a href="https://arxiv.org/abs/cond-mat/0408370" target="_blank" rel="noopener">Computational complexity and fundamental limitations to fermionic quantum Monte Carlo simulations</a> — Matthias Troyer and Uwe-Jens Wiese (2005) · why the sign problem blocks a general classical sampling shortcut for quantum physics.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/9508027" target="_blank" rel="noopener">Polynomial-time algorithms for prime factorization and discrete logarithms on a quantum computer</a> — Peter W. Shor (1995/1997) · the result that put the extended Church–Turing thesis in question; its introduction frames the issue clearly.</li>
+    <li><a href="https://www.scottaaronson.com/democritus/" target="_blank" rel="noopener">Quantum Computing Since Democritus, lecture notes</a> — Scott Aaronson (2006) · the early lectures cover computability, P vs NP and randomness in the same spirit as this page.</li>
+    <li><a href="https://complexityzoo.net/Complexity_Zoo" target="_blank" rel="noopener">Complexity Zoo</a> — community-maintained · look up any class mentioned here and its known inclusions.</li>
+  </ul>
+
+  <h2 id="exercises">Check yourself</h2>
+  <ol class="exercises">
+    <li><b>XOR from NAND</b> — Build XOR using only NAND gates. A good answer uses four gates: let m = NAND(a,b), then XOR = NAND(NAND(a,m), NAND(b,m)). Check all four input rows, and note which wires you had to fan out.</li>
+    <li><b>A probabilistic simulator in numpy</b><span class="code">code</span> — Represent a 3-bit register as a length-8 probability vector. Write <span class="mono">on_bit(M, k, n)</span> that builds the 8×8 matrix for a 2×2 stochastic M on bit k using <span class="mono">np.kron</span>. Start in 000, apply COIN to bit 0, then CNOT (bit 0 controls bit 1) and confirm you get ½ on 000 and ½ on the string with bits 0 and 1 both set, a correlated distribution that does not factor. Check that every column of every matrix sums to 1 and that the L1 norm stays 1. Then apply COIN twice to a fresh bit and confirm you cannot get back to certainty. Finally build Toffoli as an 8×8 permutation and assert <span class="mono">T.T @ T == I</span>. A good answer is about 20 lines, plus a sampling version that flips coins and follows one path, and agrees with the vector after 10⁵ runs.</li>
+    <li><b>Landauer's bill</b> — At 300 K, what is the minimum power needed to erase 10¹⁸ bits per second? (About 2.9 mW.) Compare with the tens to hundreds of watts a modern processor draws, and explain why reversible logic has not taken over despite having no such floor.</li>
+    <li><b>Where does the shortcut break?</b> — Suppose two paths lead from 0 to output 1, each with weight ½. Under probability rules, the chance of output 1 is ½ + ½ = 1, and a sampler finds this by walking either path. Now let the weights be +½ and −½ and the rule "add the weights, then square". Explain why walking one path at a time cannot tell you the answer is 0, and what a simulator would have to keep in memory instead. This is the whole of page 04 in miniature.</li>
+  </ol>
+
+  <div class="callout">Next: <a class="lnk" href="p02.html">02 Why Quantum?</a> · Back to the <a class="lnk" href="../index.html#why">map</a>.</div>
+</main>
+<footer>Quantum Computing, Mapped · original explanation, written November 2026. Current-state claims link to their sources; company claims are marked as such.</footer>
+</body>
+</html>

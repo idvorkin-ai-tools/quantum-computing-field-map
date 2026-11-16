@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>04 Fundamentals of Quantum Computation — Quantum Computing, Mapped</title>
+<meta name="description" content="The core math of quantum computing: state vectors, tensor products, unitary gates, Clifford+T, measurement, interference and phase kickback, worked end to end." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>QUANTUM&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#how">← field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">PART 04 · HOW IT WORKS</span><span class="mono">12 min read</span></div>
+  <h1>Fundamentals of Quantum Computation</h1>
+  <div class="authors">Quantum Computing, Mapped · part 04 of 09 · current to November 2026</div>
+
+  <div class="tldr"><b>TL;DR —</b> What is a quantum computer, mathematically? It is a randomized computer with one rule changed: the state is a vector of 2ⁿ <i>complex</i> amplitudes with unit L2 norm, evolved by unitary matrices, and you only ever see one sample from it, drawn with probability |amplitude|². Because amplitudes can be negative or complex, paths to a wrong answer can cancel. That cancellation, interference, is the whole resource: a quantum algorithm is a way of arranging interference so the answer you want is the likely sample. It is not a way of trying every input at once and reading them all.</div>
+
+  <p class="lead">Page 01 set up probabilistic computing as a vector of 2ⁿ non-negative probabilities pushed around by stochastic matrices. Page 03 gave the physics: amplitudes, the Born rule, entanglement. This page puts the two together into the circuit model that every later page assumes. If you can follow the matrices here, pages 05 and 06 are bookkeeping on top: Shor and chemistry are bigger interference patterns, and error correction is the engineering of keeping those patterns intact.</p>
+
+  <h2 id="state">The state: one rule different from a randomized computer</h2>
+
+  <p>A randomized machine with n bits is, at any moment, described by a probability vector <span class="mono">p ∈ ℝ^(2ⁿ)</span>, entries non-negative, summing to 1. A step is a stochastic matrix M (non-negative entries, columns summing to 1), and <span class="mono">p ← M p</span>. The machine is only ever in one of the 2ⁿ configurations; the vector describes your ignorance.</p>
+
+  <p>A quantum machine with n qubits is described by an amplitude vector:</p>
+
+  <div class="math">|ψ⟩ = Σ_x a_x |x⟩,   x ∈ {0,1}ⁿ,   a_x ∈ ℂ
+Σ_x |a_x|² = 1        (unit L2 norm)</div>
+
+  <p>A step is a unitary U, a complex matrix with <span class="mono">U†U = I</span>, and <span class="mono">|ψ⟩ ← U|ψ⟩</span>. Unitaries are exactly the linear maps that preserve the L2 norm, the way stochastic matrices are the maps that preserve L1 norm and non-negativity. The vector is not a summary of ignorance here: it is the state, and there is no hidden local "real" configuration underneath it (that is what Bell experiments rule out, page 03).</p>
+
+  <div class="scroll-x"><table class="kv">
+    <tr><th></th><th>Randomized (page 01)</th><th>Quantum (this page)</th></tr>
+    <tr><td>State</td><td>p ∈ ℝ^(2ⁿ), p_x ≥ 0</td><td>a ∈ ℂ^(2ⁿ)</td></tr>
+    <tr><td>Norm kept</td><td>Σ p_x = 1 (L1)</td><td>Σ |a_x|² = 1 (L2)</td></tr>
+    <tr><td>Step</td><td>stochastic M</td><td>unitary U, U†U = I</td></tr>
+    <tr><td>Reversible?</td><td>generally no</td><td>always (U⁻¹ = U†)</td></tr>
+    <tr><td>Readout</td><td>x with prob p_x</td><td>x with prob |a_x|²</td></tr>
+    <tr><td>Paths combine by</td><td>adding probabilities</td><td>adding amplitudes, then squaring</td></tr>
+  </table></div>
+
+  <p>The last row is the difference that matters. In a randomized machine the probability of an outcome is a sum of non-negative path weights, so more paths can only make it more likely. In a quantum machine you add complex amplitudes along paths and square at the end, so two paths of equal size and opposite sign contribute zero. Nothing else on this page is as important.</p>
+
+  <p>Two housekeeping facts. A global phase is unobservable: <span class="mono">e^{iγ}|ψ⟩</span> gives the same statistics as <span class="mono">|ψ⟩</span>, which is why one qubit has two real degrees of freedom, the Bloch angles in <span class="mono">|ψ⟩ = cos(θ/2)|0⟩ + e^{iφ} sin(θ/2)|1⟩</span>. Relative phases between basis states are observable, because a later gate can turn them into differences in magnitude.</p>
+
+  <h2 id="tensor">Tensor products and entanglement, as linear algebra</h2>
+
+  <p>Two systems combine by the tensor (Kronecker) product. For one qubit in <span class="mono">(a, b)</span> and another in <span class="mono">(c, d)</span>, the joint state is</p>
+
+  <div class="math">(a|0⟩ + b|1⟩) ⊗ (c|0⟩ + d|1⟩)
+  = ac|00⟩ + ad|01⟩ + bc|10⟩ + bd|11⟩</div>
+
+  <p>so the dimension multiplies, 2 · 2 = 4, and n qubits live in ℂ^(2ⁿ). In numpy this is <span class="mono">np.kron</span>, with the first qubit as the most significant bit of the index. A gate on one qubit of many is <span class="mono">I ⊗ … ⊗ U ⊗ … ⊗ I</span>; a simulator never builds that 2ⁿ×2ⁿ matrix, it reshapes the state into an n-dimensional 2×2×…×2 tensor and contracts U against one axis.</p>
+
+  <p>Most vectors in ℂ⁴ are not of the product form above. An easy test: reshape the four amplitudes into a 2×2 matrix <span class="mono">[[a₀₀, a₀₁], [a₁₀, a₁₁]]</span>. A product state has rank 1 (determinant zero). The Bell state</p>
+
+  <div class="math">|Φ⁺⟩ = (|00⟩ + |11⟩)/√2   →   [[1/√2, 0], [0, 1/√2]]</div>
+
+  <p>has rank 2, so it cannot be written as one qubit's state times the other's. That is all "entangled" means operationally: the joint vector does not factor. For n qubits the rank across each cut (the Schmidt rank) is what tensor-network simulators exploit; low entanglement means a compact representation, and a state that is highly entangled across every cut is where classical simulation runs out of road.</p>
+
+  <p>That road is short. A dense statevector of n qubits in complex128 needs <span class="mono">16 · 2ⁿ</span> bytes: 16 GiB at n = 30, 16 TiB at n = 40, 16 PiB at n = 50. Every added qubit doubles it.</p>
+
+  <h2 id="gates">The gates, and the worked example</h2>
+
+  <p>Single-qubit gates are 2×2 unitaries acting on <span class="mono">(α, β)</span>. The ones you meet everywhere:</p>
+
+  <div class="math">X = [[0, 1],      Z = [[1,  0],
+     [1, 0]]          [0, −1]]
+
+H = (1/√2) [[1,  1],
+            [1, −1]]
+
+S = [[1, 0],     T = [[1, 0      ],
+     [0, i]]          [0, e^{iπ/4}]]</div>
+
+  <p>X is NOT. Z flips the sign of the <span class="mono">|1⟩</span> amplitude, a pure relative phase. Y is <span class="mono">iXZ</span>. S and T are smaller phase turns, with <span class="mono">T² = S</span> and <span class="mono">S² = Z</span>. H is the workhorse: it maps <span class="mono">|0⟩ → |+⟩ = (|0⟩+|1⟩)/√2</span> and <span class="mono">|1⟩ → |−⟩ = (|0⟩−|1⟩)/√2</span>, and is its own inverse.</p>
+
+  <p>The two-qubit gate is CNOT, which flips the target when the control is 1. In the basis order <span class="mono">|00⟩, |01⟩, |10⟩, |11⟩</span> with the control first:</p>
+
+  <div class="math">CNOT = [[1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 1],
+        [0, 0, 1, 0]]
+
+CZ   = diag(1, 1, 1, −1)</div>
+
+  <p>CNOT is a permutation, so it is the reversible classical XOR from page 01 and nothing more until its input is in superposition. Then <span class="mono">CNOT (H ⊗ I)|00⟩ = (|00⟩ + |11⟩)/√2</span>: a Hadamard and a classical gate make a Bell state. Toffoli (controlled-controlled-NOT) is also a permutation, which is why every classical reversible circuit is already a quantum circuit.</p>
+
+  <p><b>Worked example: H, then H again.</b> Start at <span class="mono">|0⟩ = (1, 0)</span>.</p>
+
+  <div class="math">H|0⟩  = (1/√2)(1, 1)          = |+⟩
+H|+⟩  = (1/√2)·(1/√2)(1+1, 1−1)
+      = (1/2)(2, 0)  = (1, 0)  = |0⟩</div>
+
+  <p>After one H, measuring gives 0 or 1 with probability ½ each, exactly like a fair coin. After two, you get 0 with certainty. Trace the paths: from <span class="mono">|0⟩</span> there are two routes to <span class="mono">|1⟩</span>, via 0 (amplitude <span class="mono">(1/√2)(1/√2) = +½</span>) and via 1 (amplitude <span class="mono">(1/√2)(−1/√2) = −½</span>). They cancel. The two routes to <span class="mono">|0⟩</span> are both +½ and add to 1.</p>
+
+  <p>Now do the classical version: the fair-coin stochastic matrix <span class="mono">[[½, ½], [½, ½]]</span> applied twice to <span class="mono">(1, 0)</span> gives <span class="mono">(½, ½)</span> and stays there. Randomness composed with randomness is more randomness. A Hadamard composed with a Hadamard is the identity. Same single-step statistics, opposite two-step behaviour, and the whole gap is the minus sign in the bottom-right of H.</p>
+
+  <h2 id="universality">Circuits and universality: Clifford is free, T is the price</h2>
+
+  <p>A circuit is a sequence of gates on wires, read left to right, with measurements at the end. Its size is the gate count and its depth is the number of layers, the same measures as page 01. A gate set is universal if it can approximate any unitary on any number of qubits to any accuracy ε.</p>
+
+  <p>The set that matters for fault tolerance is <b>Clifford + T</b>: H, S and CNOT generate the Clifford group, and adding T makes it universal. One qubit gates plus CNOT are exactly universal (Barenco et al. 1995). A finite set can only be approximately universal, but the Solovay–Kitaev theorem says the approximation is cheap: any single-qubit unitary to accuracy ε needs only <span class="mono">polylog(1/ε)</span> gates, so going from 10⁻³ to 10⁻⁹ accuracy multiplies the gate count by a small factor, not by a million.</p>
+
+  <p>Now the surprise. The <b>Gottesman–Knill theorem</b> says a circuit built only from Clifford gates, starting in <span class="mono">|0…0⟩</span> and measured in the computational basis, can be simulated efficiently on a classical computer, even though it can create highly entangled states. The trick is to track not the 2ⁿ amplitudes but the n Pauli operators the state is a +1 eigenvector of (its stabilizers), an n×2n binary tableau that each Clifford gate updates in O(n) bit operations. Aaronson and Gottesman's simulator handles thousands of qubits on a laptop.</p>
+
+  <p>So entanglement alone is not the resource, and neither is superposition. Clifford circuits have plenty of both and are classically easy. What they lack is a gate outside the Clifford group, and T is the standard choice. Known classical simulators of Clifford+T circuits scale exponentially in the number of T gates, not the number of qubits. Hence the industry habit of counting algorithms in T gates (or Toffolis) and calling them "magic": in a fault-tolerant machine Cliffords are comparatively cheap, while each T is made by consuming a specially prepared "magic state" <span class="mono">T|+⟩</span> that has to be distilled from noisy copies (Bravyi and Kitaev, arXiv 2004). Page 06 prices that factory.</p>
+
+  <div class="callout"><b>Carry this.</b> Superposition plus entanglement is not enough to beat a classical computer. A Clifford-only circuit has both and simulates in polynomial time. Quantum advantage needs non-Clifford gates and an interference pattern that classical sampling cannot reproduce. When you see a resource estimate, the T count (or Toffoli count) tells you most of the real cost.</div>
+
+  <h2 id="measurement">Measurement, and why you cannot read out 2ⁿ numbers</h2>
+
+  <p>Measuring all n qubits returns one bitstring x with probability <span class="mono">|a_x|²</span> and leaves the register in <span class="mono">|x⟩</span>. The other 2ⁿ − 1 amplitudes are gone. Measuring one qubit of several returns a bit and renormalises the remaining amplitudes consistent with it. Measurement is the only non-unitary, irreversible step in the model, and it is usually pushed to the end of the circuit (the deferred-measurement principle says you lose nothing by doing so).</p>
+
+  <p>This is why "the computer tries all 2ⁿ inputs in parallel" is a misleading description. You can certainly prepare a state whose amplitudes encode <span class="mono">f(x)</span> for every x. You cannot get them out. Each run is one sample. To estimate one amplitude's magnitude to precision ε you need on the order of 1/ε² runs, exactly as with a classical Monte Carlo estimate.</p>
+
+  <p>The hard limit is the <b>Holevo bound</b>: n qubits, with no entanglement shared in advance with the receiver, can deliver at most n bits of classical information, however they were prepared. (With pre-shared entanglement, superdense coding gets 2 bits per qubit, and no more.) 2ⁿ amplitudes in, n bits out. The exponential state space is a workspace, not a storage medium. Page 05's warning about "loading big data into a quantum computer" follows directly: input costs you at least time linear in the data, and output costs you at most n bits per run.</p>
+
+  <h2 id="kickback">Phase kickback, and interference doing real work</h2>
+
+  <p>Quantum algorithms access a function f through an oracle, a unitary that computes f reversibly:</p>
+
+  <div class="math">U_f |x⟩|y⟩ = |x⟩|y ⊕ f(x)⟩,   f: {0,1}ⁿ → {0,1}</div>
+
+  <p>Put the target qubit in <span class="mono">|−⟩</span> and something useful happens. If <span class="mono">f(x) = 0</span> the target is unchanged; if <span class="mono">f(x) = 1</span> it becomes <span class="mono">(|1⟩ − |0⟩)/√2 = −|−⟩</span>. Either way:</p>
+
+  <div class="math">U_f |x⟩|−⟩ = (−1)^{f(x)} |x⟩|−⟩</div>
+
+  <p>The target is untouched and the answer has been written as a sign on the <i>control</i> register. That is <b>phase kickback</b>: an oracle that "writes to the target" acts, in the right basis, as a phase on the input. Signs are exactly what interference needs, and the same trick, with controlled powers of a unitary instead of a Boolean oracle, is the engine of phase estimation and Shor's algorithm (page 05).</p>
+
+  <svg viewBox="0 0 360 150" role="img" aria-label="Bernstein–Vazirani circuit: Hadamards on all inputs, one oracle call with the ancilla in the minus state, Hadamards again, then measure to read s">
+    <g stroke="#737D8B" stroke-width="1.2">
+      <line x1="34" y1="24" x2="300" y2="24" /><line x1="34" y1="54" x2="300" y2="54" /><line x1="34" y1="84" x2="300" y2="84" /><line x1="34" y1="124" x2="270" y2="124" />
+    </g>
+    <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#E7EBF1">
+      <text x="4" y="28">|0⟩</text><text x="4" y="58">|0⟩</text><text x="4" y="88">|0⟩</text><text x="4" y="128">|1⟩</text>
+    </g>
+    <g fill="#262C35" stroke="#35CFE0" stroke-width="1.2">
+      <rect x="54" y="14" width="22" height="20" rx="3" /><rect x="54" y="44" width="22" height="20" rx="3" /><rect x="54" y="74" width="22" height="20" rx="3" /><rect x="54" y="114" width="22" height="20" rx="3" />
+      <rect x="216" y="14" width="22" height="20" rx="3" /><rect x="216" y="44" width="22" height="20" rx="3" /><rect x="216" y="74" width="22" height="20" rx="3" />
+    </g>
+    <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#35CFE0" text-anchor="middle">
+      <text x="65" y="28">H</text><text x="65" y="58">H</text><text x="65" y="88">H</text><text x="65" y="128">H</text>
+      <text x="227" y="28">H</text><text x="227" y="58">H</text><text x="227" y="88">H</text>
+    </g>
+    <rect x="112" y="10" width="72" height="128" rx="4" fill="#262C35" stroke="#F5A524" stroke-width="1.4" />
+    <text x="148" y="70" font-family="IBM Plex Mono, monospace" font-size="12" fill="#F5A524" text-anchor="middle">U_f</text>
+    <text x="148" y="86" font-family="IBM Plex Mono, monospace" font-size="9" fill="#737D8B" text-anchor="middle">f(x)=s·x</text>
+    <g fill="#262C35" stroke="#E7EBF1" stroke-width="1.2">
+      <rect x="266" y="14" width="26" height="20" rx="3" /><rect x="266" y="44" width="26" height="20" rx="3" /><rect x="266" y="74" width="26" height="20" rx="3" />
+    </g>
+    <g stroke="#E7EBF1" stroke-width="1" fill="none">
+      <path d="M270 30 A9 9 0 0 1 288 30" /><path d="M270 60 A9 9 0 0 1 288 60" /><path d="M270 90 A9 9 0 0 1 288 90" />
+      <line x1="279" y1="30" x2="286" y2="18" /><line x1="279" y1="60" x2="286" y2="48" /><line x1="279" y1="90" x2="286" y2="78" />
+    </g>
+    <g font-family="IBM Plex Mono, monospace" font-size="10" fill="#737D8B">
+      <text x="304" y="28">s₁</text><text x="304" y="58">s₂</text><text x="304" y="88">s₃</text>
+      <text x="80" y="148">superpose</text><text x="196" y="148">interfere</text><text x="280" y="148">read</text>
+    </g>
+  </svg>
+
+  <p><b>Bernstein–Vazirani</b> is the cleanest example of interference doing work. A hidden string <span class="mono">s ∈ {0,1}ⁿ</span> defines <span class="mono">f(x) = s·x mod 2</span>. Classically each query returns one bit, so even a randomized algorithm needs n queries. The quantum algorithm uses one:</p>
+
+  <div class="math">1. H^⊗n |0ⁿ⟩   = 2^(−n/2) Σ_x |x⟩
+2. oracle (kickback, target in |−⟩):
+   → 2^(−n/2) Σ_x (−1)^(s·x) |x⟩
+3. H^⊗n again; amplitude on |z⟩ is
+   2^(−n) Σ_x (−1)^((s⊕z)·x) = 1 if z = s, else 0
+4. measure → s, with certainty</div>
+
+  <p>Step 3 is the key identity: <span class="mono">H^⊗n|x⟩ = 2^(−n/2) Σ_z (−1)^(x·z)|z⟩</span>, and a sum of ±1 over all x is zero unless every sign agrees. For n = 2 and s = 10 you can do it by hand: after the oracle the amplitudes on <span class="mono">00, 01, 10, 11</span> are <span class="mono">½(+1, +1, −1, −1)</span>, which is the product <span class="mono">|−⟩ ⊗ |+⟩</span>, and <span class="mono">H ⊗ H</span> sends it to <span class="mono">|1⟩ ⊗ |0⟩ = |10⟩</span>. Every wrong answer's amplitude cancels to exactly zero.</p>
+
+  <p><b>Deutsch–Jozsa</b> is the same circuit asked a different question: is f constant or balanced (promised to be one or the other)? The amplitude on <span class="mono">|0ⁿ⟩</span> at the end is <span class="mono">2^(−n) Σ_x (−1)^{f(x)}</span>, which is ±1 for constant f and 0 for balanced f. One query, certain answer, against <span class="mono">2^(n−1) + 1</span> queries for a deterministic classical algorithm. Be honest about it, though: a randomized classical algorithm that tries a handful of random inputs gets the answer with high confidence, so Deutsch–Jozsa's exponential gap only holds against exact classical algorithms. Bernstein–Vazirani's n-to-1 gap survives randomization but is only polynomial. Both are teaching examples, not applications. The exponential separations that matter (Simon's problem, then Shor) use the same skeleton on a richer hidden structure: Simon keeps the Hadamard layers but hides an XOR period, and Shor replaces them with a quantum Fourier transform over ℤ_N to find a modular period.</p>
+
+  <h2 id="pattern">The shape of every quantum algorithm</h2>
+
+  <p>Strip the examples back and the template is always the same, and it is worth keeping as a checklist for anything a vendor calls a quantum algorithm:</p>
+
+  <div class="scroll-x"><table class="kv">
+    <tr><th>Step</th><th>What happens</th><th>Where it goes wrong</th></tr>
+    <tr><td>Prepare</td><td>make a structured superposition (often H^⊗n)</td><td>loading arbitrary data costs time ≥ its size</td></tr>
+    <tr><td>Compute</td><td>a reversible oracle or Hamiltonian evolution</td><td>needs ancillas and uncomputation; T-count is the cost</td></tr>
+    <tr><td>Kick back</td><td>results become phases on the input register</td><td>only works if the problem has the right structure</td></tr>
+    <tr><td>Interfere</td><td>H^⊗n, QFT, or a Grover reflection</td><td>no structure → only quadratic gain (Grover)</td></tr>
+    <tr><td>Measure</td><td>one sample, concentrated on the answer</td><td>n bits out per run, at most</td></tr>
+  </table></div>
+
+  <p>The question to ask of any proposal is: what is the interference pattern, and why does it concentrate on the answer? If the honest response is "we put all the data in superposition," there is no algorithm yet. Page 05 goes through the cases where there is one (period finding, simulation) and the cases where the answer is only quadratic or unknown (search, optimisation, machine learning). Page 06 is about what it costs to keep a 2ⁿ-dimensional vector from leaking into its environment for the billions of gates those algorithms need.</p>
+
+  <h2 id="sources">Sources and further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://doi.org/10.1017/CBO9780511976667" target="_blank" rel="noopener">Quantum Computation and Quantum Information</a> — Nielsen &amp; Chuang (2010, 10th anniversary ed.) · the standard text; chapters 1, 2 and 4 cover everything on this page in more depth.</li>
+    <li><a href="https://www.preskill.caltech.edu/ph229/" target="_blank" rel="noopener">Lecture notes for Physics 219/229: Quantum Information and Computation</a> — John Preskill (Caltech, ongoing) · free, rigorous notes; the chapters on circuits and on the Holevo bound are the reference treatment.</li>
+    <li><a href="https://www.scottaaronson.com/qclec.pdf" target="_blank" rel="noopener">Introduction to Quantum Information Science, lecture notes</a> — Scott Aaronson (2018) · written for computer scientists; the clearest account of amplitudes versus probabilities and of why "try every input" is wrong.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/9708016" target="_blank" rel="noopener">Quantum Algorithms Revisited</a> — Cleve, Ekert, Macchiavello &amp; Mosca (1998) · introduced the phase-kickback view and recasts Deutsch–Jozsa and Shor in one interference framework.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/9503016" target="_blank" rel="noopener">Elementary gates for quantum computation</a> — Barenco et al. (1995) · proves one-qubit gates plus CNOT are universal, and builds Toffoli from them.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/0505030" target="_blank" rel="noopener">The Solovay–Kitaev algorithm</a> — Dawson &amp; Nielsen (2005) · a readable proof and implementation of why a finite gate set approximates any unitary with polylog(1/ε) gates.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/9807006" target="_blank" rel="noopener">The Heisenberg Representation of Quantum Computers</a> — Gottesman (1998) · the stabilizer formalism and the Gottesman–Knill theorem.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/0406196" target="_blank" rel="noopener">Improved Simulation of Stabilizer Circuits</a> — Aaronson &amp; Gottesman (2004) · the tableau simulator that makes Clifford circuits on thousands of qubits classically routine.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/0403025" target="_blank" rel="noopener">Universal Quantum Computation with ideal Clifford gates and noisy ancillas</a> — Bravyi &amp; Kitaev (2004) · magic states and their distillation: why T is the expensive gate in a fault-tolerant machine.</li>
+  </ul>
+
+  <h2 id="exercises">Check yourself</h2>
+  <ol class="exercises">
+    <li><b>A 30-line statevector simulator</b> <span class="code">code</span> — In numpy, store n qubits as a complex array of shape <span class="mono">(2,)*n</span>. Write <span class="mono">apply_1q(state, U, k)</span> with <span class="mono">np.tensordot</span> plus <span class="mono">np.moveaxis</span>, and <span class="mono">apply_cnot(state, c, t)</span> by indexing. Check: H twice on <span class="mono">|0⟩</span> returns <span class="mono">|0⟩</span>; H then CNOT on <span class="mono">|00⟩</span> gives amplitude 1/√2 on 00 and 11 only; Bernstein–Vazirani with n = 8 and a random s returns s with probability 1 (implement the oracle as Z on each qubit where s_i = 1, which is phase kickback already applied). A good answer also notes where the memory goes at n = 30.</li>
+    <li><b>Coin versus Hadamard</b> — Apply the fair-coin stochastic matrix twice and H twice to <span class="mono">(1, 0)</span>. Then show that no stochastic matrix that takes <span class="mono">(1, 0)</span> to <span class="mono">(½, ½)</span> can take <span class="mono">(½, ½)</span> back to <span class="mono">(1, 0)</span> (hint: the first column is fixed, then solve for the second). A good answer names the exact property (non-negativity, no cancellation) that makes the classical case irreversible here.</li>
+    <li><b>Why is this one easy?</b> — A circuit on 1,000 qubits uses only H, S and CNOT, with 10⁶ gates, then measures everything. Explain why a laptop can sample from it, what data structure it tracks, and what changes when you add 40 T gates, then 4,000. A good answer says the cost grows with T count, not qubit count, and connects that to why fault-tolerant resource estimates report T or Toffoli counts.</li>
+    <li><b>Shots</b> — A circuit's output bitstring 0110 has true probability 0.30. How many runs do you need so that the estimated frequency has a standard error of 0.005 (roughly ±0.01 at 95%)? (Answer: <span class="mono">N ≥ 0.3·0.7 / 0.005² = 8,400</span>.) Relate this to the Holevo bound: why does every quantum algorithm worth having end with an output distribution concentrated on few strings?</li>
+  </ol>
+
+  <div class="callout">Next: <a class="lnk" href="p05.html">05 Capabilities of Quantum Computation</a> · Back to the <a class="lnk" href="../index.html#how">map</a>.</div>
+</main>
+<footer>Quantum Computing, Mapped · original explanation, written November 2026. Current-state claims link to their sources; company claims are marked as such.</footer>
+</body>
+</html>

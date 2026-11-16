@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>02 Why Quantum? — Quantum Computing, Mapped</title>
+<meta name="description" content="Why build a quantum computer at all: Feynman's simulation argument, where the speedups really come from, BQP vs NP, and an honest scorecard." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>QUANTUM&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#why">← field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">PART 02 · WHY QUANTUM</span><span class="mono">11 min read</span></div>
+  <h1>Why Quantum?</h1>
+  <div class="authors">Quantum Computing, Mapped · part 02 of 09 · current to November 2026</div>
+
+  <div class="tldr"><b>TL;DR —</b> Classical computers appear to need exponential resources to simulate general quantum systems. So Feynman proposed computing with quantum systems themselves. The speedup does not come from "trying every answer at once". It comes from interference, because amplitudes can be negative or complex and can cancel, which probabilities never do, and that only pays off on problems with the right structure: physical simulation, period finding (which breaks RSA and elliptic curves), and, quadratically, unstructured search. Quantum computers are not believed to solve NP-complete problems efficiently.</div>
+
+  <p class="lead">Page 01 set up a probabilistic computer: a vector of 2ⁿ non-negative probabilities pushed around by stochastic matrices, with the extended Church–Turing thesis claiming that model captures everything physically efficient. This page asks what would justify building a different machine. The short answer is that nature itself seems to violate the thesis. The useful answer says exactly where it does and where it doesn't, so that later pages have a yardstick for every claimed application.</p>
+
+  <h2 id="feynman">Feynman's argument: physics is expensive to simulate</h2>
+  <p>In a 1981 talk, published in 1982 as "Simulating physics with computers", Richard Feynman asked whether a classical computer could simulate quantum physics efficiently. A useful test case is n interacting spin-½ particles, for example the magnetic moments in a material. Writing down a general state takes one complex amplitude for each of the 2ⁿ classical configurations:</p>
+  <div class="math">|ψ⟩ = Σ_x a_x |x⟩,   x ∈ {0,1}ⁿ,   Σ|a_x|² = 1
+
+n = 50:  2⁵⁰ ≈ 1.1 × 10¹⁵ amplitudes
+         × 16 bytes (complex128) ≈ 18 PB
+n = 300: 2³⁰⁰ ≈ 2 × 10⁹⁰  (atoms in universe ≈ 10⁸⁰)</div>
+  <p>Storage is only the start. Time evolution multiplies that vector by a 2ⁿ × 2ⁿ unitary. Every added particle doubles the cost. Physicists have clever workarounds that do well on many real systems. Tensor networks work for weakly entangled states, and density functional theory and coupled cluster work for weakly correlated molecules. Quantum Monte Carlo samples configurations with probability weights. The workarounds run out on <em>strongly correlated</em> systems: transition-metal catalysts, high-temperature superconductors, frustrated magnets. Fermions and frustration produce weights of both signs. That is the "sign problem", and it makes the Monte Carlo variance blow up exponentially.</p>
+  <p>Feynman's sharper point was that this isn't a weakness of current algorithms. A local classical <em>probabilistic</em> machine cannot reproduce some quantum correlations at all; Bell-type experiments rule it out. His proposal was to stop fighting and build a machine whose own state is a quantum state, controllable enough to imitate the system you care about. In 1996 Seth Lloyd showed that the idea works for any system with local interactions. A universal quantum computer can approximate its time evolution with a number of gates polynomial in n and in the simulated time. That result is the first, and still the most robust, reason to want the machine.</p>
+
+  <h2 id="state-space">The state space is big, but that isn't the speedup</h2>
+  <p>The tempting conclusion from 2ⁿ amplitudes is "n qubits do 2ⁿ computations in parallel". Drop it. Recall from <a class="lnk" href="p01.html">page 01</a> that a probabilistic computer on n bits is <em>also</em> described by a 2ⁿ-entry vector, and nobody thinks coin-flipping gives exponential speedups. In both cases you see one n-bit outcome per run. You never see the vector.</p>
+  <p>The difference is what the entries are and how they combine. Think of a computation as many paths from input to output. Classically, the probability of an output is the sum of the probabilities of the paths that reach it. Every term is non-negative, so adding paths can only raise a probability. Quantumly, you add <em>amplitudes</em> and then square:</p>
+  <div class="math">classical:  P(x) = Σ_paths p_path        (p ≥ 0)
+quantum:    P(x) = | Σ_paths α_path |²   (α ∈ ℂ)
+
+two paths, α = +½ and −½:
+  quantum   P = |½ − ½|²   = 0
+  classical P = ¼ + ¼      = ½</div>
+  <p>That minus sign is the whole resource. A quantum algorithm is an arrangement of gates in which the paths to wrong answers cancel (destructive interference) and the paths to the answer you want reinforce (constructive interference). Then a single measurement lands on a useful outcome with high probability. Page 03 shows the physics of this with a two-path interferometer, and page 04 builds the matrices.</p>
+  <p>It follows that a quantum speedup needs a problem with <em>global structure</em> that an interference pattern can be tuned to. If the answer is an arbitrary needle with no relationship to anything else, there is nothing for the cancellation to work with. Grover's algorithm shows how far you can still get then, which is only a square root.</p>
+
+  <h2 id="structure">Which problems have structure a quantum computer can use</h2>
+  <p>After forty years, the problems with large, well-understood quantum speedups fall into a short list. The <a href="https://quantumalgorithmzoo.org/" target="_blank" rel="noopener">Quantum Algorithm Zoo</a> catalogues hundreds of papers, but most of the big speedups are variations on these:</p>
+  <ul>
+    <li><strong>Simulating quantum systems.</strong> Feynman's case. Simulating <em>dynamics</em> (how a state evolves) is efficient for local Hamiltonians, and so is estimating the energy of a state you can already prepare, via phase estimation. Finding a <em>ground state</em> from scratch is QMA-hard in general, hard even for a quantum computer, so advantage in chemistry depends on preparing a good starting state. A careful 2022 survey by Lee, Chan, Preskill and colleagues concluded that evidence for <em>generic</em> exponential advantage in ground-state chemistry "has yet to be found". The case rests on specific hard instances, not on all of chemistry.</li>
+    <li><strong>Period finding and the hidden subgroup problem.</strong> Given f with a hidden period (f(x) = f(x + r)), the quantum Fourier transform makes all the wrong frequencies cancel, so measurement reveals r. Shor (1994) reduced factoring and discrete logarithms to period finding. That breaks RSA, Diffie–Hellman and elliptic-curve cryptography in polynomial time, roughly <span class="mono">O(n³)</span> gates for an n-bit modulus with schoolbook arithmetic. The general pattern is the <em>abelian</em> hidden subgroup problem. Non-abelian versions, and the lattice problems underneath post-quantum cryptography, have no known efficient quantum algorithm. That gap is why post-quantum cryptography exists.</li>
+    <li><strong>Unstructured search.</strong> Grover (1996): find a marked item among N using <span class="mono">O(√N)</span> oracle calls instead of <span class="mono">O(N)</span>. It applies to almost anything with a checkable answer. The gain is only quadratic, and it is provably optimal: Bennett, Bernstein, Brassard and Vazirani showed that no quantum algorithm does better on a black box. Amplitude estimation gives the same quadratic gain for Monte Carlo sampling.</li>
+  </ul>
+  <p>Linear-systems solvers (HHL), optimisation heuristics (QAOA, annealing) and quantum machine learning come up constantly. Each either has a quadratic-or-unknown speedup, or carries fine print about loading data in and reading answers out that removes most of the advantage in practice. Page 05 takes them apart one by one.</p>
+
+  <h2 id="bqp">BQP vs NP: what quantum computers are not</h2>
+  <p>The complexity class for "efficient on a quantum computer" is <strong>BQP</strong>. It contains the decision problems solvable by a polynomial-size quantum circuit family that answers correctly with probability ≥ 2/3. It is the quantum analogue of BPP from page 01. The containments we can prove are modest:</p>
+  <div class="math">P ⊆ BPP ⊆ BQP ⊆ PP ⊆ PSPACE</div>
+  <p>None of these inclusions is known to be strict (and P = BPP is widely believed); proving BPP ≠ BQP would prove P ≠ PSPACE, a major open problem. So "quantum computers are exponentially faster" is a belief, supported by evidence. Factoring is the flagship example. It is in BQP, and the best known classical algorithm (the number field sieve) runs in sub-exponential but super-polynomial time. Nobody has proven factoring is classically hard.</p>
+  <p>Factoring is also <em>not</em> believed to be NP-complete. It lies in NP ∩ coNP, and an NP-complete problem there would collapse the polynomial hierarchy. Shor tells you nothing about the travelling salesman, SAT, or scheduling. For those, the evidence says quantum computers do not help exponentially:</p>
+  <ul>
+    <li>The BBBV bound above says black-box search needs Ω(√N) queries. Brute-forcing 2ⁿ SAT assignments therefore drops only to about 2^(n/2), which is still exponential.</li>
+    <li>Raz and Tal (2018) built an oracle relative to which BQP is not contained in the polynomial hierarchy. That is evidence that BQP and NP are <em>incomparable</em>: each contains problems the other is not believed to.</li>
+  </ul>
+  <p>Oracle results are evidence, not proof, but every serious researcher works from the same picture:</p>
+  <svg viewBox="0 0 600 300" role="img" aria-label="Believed relationship of complexity classes: P inside BPP inside BQP; NP overlaps BQP; factoring sits in the overlap; NP-complete problems lie outside BQP; all inside PSPACE.">
+    <rect x="10" y="10" width="580" height="280" rx="18" fill="none" stroke="#262C35" stroke-width="2"/>
+    <text x="30" y="38" fill="#737D8B" font-family="IBM Plex Mono" font-size="14">PSPACE</text>
+    <ellipse cx="225" cy="160" rx="185" ry="105" fill="rgba(53,207,224,0.06)" stroke="#35CFE0" stroke-width="2"/>
+    <text x="70" y="110" fill="#35CFE0" font-family="IBM Plex Mono" font-size="15">BQP</text>
+    <ellipse cx="385" cy="160" rx="180" ry="105" fill="rgba(245,165,36,0.06)" stroke="#F5A524" stroke-width="2"/>
+    <text x="500" y="110" fill="#F5A524" font-family="IBM Plex Mono" font-size="15">NP</text>
+    <ellipse cx="300" cy="200" rx="70" ry="42" fill="none" stroke="#E7EBF1" stroke-width="1.5"/>
+    <text x="268" y="206" fill="#E7EBF1" font-family="IBM Plex Mono" font-size="13">P, BPP</text>
+    <circle cx="305" cy="105" r="6" fill="#E7EBF1"/>
+    <text x="250" y="88" fill="#E7EBF1" font-family="IBM Plex Sans" font-size="13">factoring</text>
+    <path d="M520 150 Q545 200 515 245" fill="none" stroke="#F5A524" stroke-width="6" stroke-linecap="round" opacity="0.55"/>
+    <text x="430" y="285" fill="#F5A524" font-family="IBM Plex Sans" font-size="13">NP-complete</text>
+    <text x="40" y="285" fill="#737D8B" font-family="IBM Plex Sans" font-size="12">believed, not proven</text>
+  </svg>
+  <p>Hardware progress cannot shift this boundary. As far as anyone knows, even a perfect million-qubit machine would still need exponential time for SAT.</p>
+
+  <h2 id="scorecard">The honest scorecard of speedup types</h2>
+  <p>When someone pitches a quantum application, the first question is which row of this table it belongs to. "Speedup" here means asymptotic, against the best known classical algorithm:</p>
+  <div class="scroll-x"><table class="kv">
+    <thead><tr><th>Speedup type</th><th>Examples</th><th>Classical → quantum</th><th>How sure are we?</th></tr></thead>
+    <tbody>
+      <tr><td>Exponential (super-polynomial)</td><td>Factoring, discrete log (Shor); dynamics of many-body quantum systems</td><td>sub-exp or exp → poly</td><td>Algorithm proven; classical hardness believed, not proven</td></tr>
+      <tr><td>Exponential, instance-dependent</td><td>Ground-state energies of strongly correlated molecules and materials</td><td>exp (for some instances) → poly, given a good initial state</td><td>Plausible for specific hard cases; not generic across chemistry</td></tr>
+      <tr><td>Polynomial (super-quadratic)</td><td>Some structured simulation, sampling and algebraic problems</td><td>N^k → N^j, k/j &gt; 2</td><td>Case by case</td></tr>
+      <tr><td>Quadratic</td><td>Grover search, amplitude estimation for Monte Carlo, many optimisation subroutines</td><td>N → √N</td><td>Proven, but rarely useful once error-correction overheads are counted</td></tr>
+      <tr><td>None known / unproven</td><td>NP-complete problems in general, QAOA and annealing heuristics, most quantum ML</td><td>exp → exp, or heuristic</td><td>No demonstrated advantage</td></tr>
+    </tbody>
+  </table></div>
+  <p>The quadratic row disappoints for a concrete reason. Asymptotic speedups ignore constant factors, and fault-tolerant quantum gates are slow. Each logical operation is carried out by many physical qubits running error-correction cycles (page 06). Here is the arithmetic with <em>illustrative</em> numbers. A classical check costs t_c = 1 ns, and one error-corrected Grover iteration, oracle included, costs t_q = 1 ms:</p>
+  <div class="math">break-even: N · t_c = √N · t_q
+          ⇒ N* = (t_q / t_c)² = (10⁶)² = 10¹²
+quantum runtime at N*: √N* · t_q = 10⁶ · 1 ms
+                                 ≈ 17 minutes
+
+now give the classical side 10⁶ cores:
+  N* = (t_q · 10⁶ / t_c)² = 10²⁴
+  quantum runtime ≈ 10¹² · 1 ms ≈ 32 years</div>
+  <p>Grover does not parallelise well, and classical search parallelises perfectly. So the quantum machine wins only on problems so large that it would have to run for decades. Babbush and colleagues did this analysis carefully with real surface-code costs. They concluded that quadratic speedups "will not enable quantum advantage on early generations" of fault-tolerant machines, while quartic speedups look much more practical. Hoefler, Häner and Troyer reached the same verdict: useful applications need super-quadratic speedups <em>and</em> small inputs and outputs. Their best candidates are chemistry and materials science.</p>
+
+  <div class="callout"><b>Carry this:</b> the exponential state space is not the speedup. Interference on a structured problem is. Before believing a quantum application, ask three things. Which speedup row is it in? Does it survive a large constant-factor penalty? Can its input be loaded and its answer read out in a few qubits' worth of measurements? Simulation and Shor pass all three. Most optimisation and ML pitches fail at least one.</div>
+
+  <h2 id="crypto">The cryptography motivation, briefly</h2>
+  <p>Shor's algorithm gives a quantum computer an application with obvious, immediate stakes: RSA and elliptic-curve cryptography protect almost every TLS session, software update signature and key exchange on the internet. A cryptographically relevant quantum computer does not exist today. The resource estimate has fallen fast, though. A 2025 analysis by Gidney estimates that 2048-bit RSA could be factored by fewer than one million noisy qubits in under a week <span class="tag pre">preprint</span>. It assumes a 0.1% gate error rate, a 1 µs error-correction cycle and nearest-neighbour connectivity. That is about 20× fewer qubits than the 2019 estimate of 20 million (<a href="https://arxiv.org/abs/2505.15917" target="_blank" rel="noopener">arXiv 2505.15917</a>).</p>
+  <p>The threat already applies to data recorded today, through <strong>"harvest now, decrypt later"</strong>. An adversary who stores encrypted traffic now can decrypt it whenever the machine arrives. Any secret that must stay secret for ten or more years is exposed already. This is why NIST's final transition guidance (October 2026) deprecates RSA, ECDSA, EdDSA, Diffie–Hellman and ECDH after 2030 and disallows them after 2035, at any key size (<a href="https://csrc.nist.gov/pubs/ir/8547/final" target="_blank" rel="noopener">NIST IR 8547</a>). Page 05 explains how Shor works and how the resource estimates have evolved. Pages 08 and 09 cover the deadlines and what to do about them.</p>
+
+  <h2 id="sources">Sources and further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://doi.org/10.1007/BF02650179" target="_blank" rel="noopener">Simulating physics with computers</a> — Richard P. Feynman (1982) · the original argument that quantum systems need a quantum simulator.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/9508027" target="_blank" rel="noopener">Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer</a> — Peter W. Shor (1995/97) · period finding and the exponential speedup that motivates the field.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/9605043" target="_blank" rel="noopener">A fast quantum mechanical algorithm for database search</a> — Lov K. Grover (1996) · the quadratic speedup for unstructured search.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/9701001" target="_blank" rel="noopener">Strengths and Weaknesses of Quantum Computing</a> — Bennett, Bernstein, Brassard, Vazirani (1997) · proves Grover is optimal; black-box NP search stays exponential.</li>
+    <li><a href="https://eccc.weizmann.ac.il/report/2018/107/" target="_blank" rel="noopener">Oracle Separation of BQP and PH</a> — Ran Raz, Avishay Tal (2018) · evidence that BQP sits outside the classical hierarchy and is incomparable with NP.</li>
+    <li><a href="https://www.scottaaronson.com/writings/limitsqc-draft.pdf" target="_blank" rel="noopener">The Limits of Quantum Computers (draft)</a> — Scott Aaronson (2008) · the clearest non-technical takedown of "tries all answers at once".</li>
+    <li><a href="https://arxiv.org/abs/1203.5813" target="_blank" rel="noopener">Quantum computing and the entanglement frontier</a> — John Preskill (2012) · why controllable quantum systems are scientifically new, and where "quantum supremacy" was named.</li>
+    <li><a href="https://arxiv.org/abs/2208.02199" target="_blank" rel="noopener">Is there evidence for exponential quantum advantage in quantum chemistry?</a> — Lee, Chan, Preskill et al. (2022) · the sober check on the strongest application.</li>
+    <li><a href="https://arxiv.org/abs/2011.04149" target="_blank" rel="noopener">Focus beyond quadratic speedups for error-corrected quantum advantage</a> — Babbush, McClean, Newman, Gidney, Boixo, Neven (2020; PRX Quantum 2021) · the surface-code arithmetic behind the quadratic row.</li>
+    <li><a href="https://arxiv.org/abs/2307.00523" target="_blank" rel="noopener">Disentangling Hype from Practicality: On Realistically Achieving Quantum Advantage</a> — Hoefler, Häner, Troyer (2023; CACM) · super-quadratic speedups and small I/O as the filters.</li>
+    <li><a href="https://quantumalgorithmzoo.org/" target="_blank" rel="noopener">Quantum Algorithm Zoo</a> — Stephen Jordan (maintained) · the catalogue of known quantum algorithms and their speedups.</li>
+    <li><a href="https://csrc.nist.gov/pubs/ir/8547/final" target="_blank" rel="noopener">NIST IR 8547: Transition to Post-Quantum Cryptography Standards</a> — NIST (final, Oct 2026) · the 2030 deprecation and 2035 disallow dates.</li>
+  </ul>
+
+  <h2 id="exercises">Check yourself</h2>
+  <ol class="exercises">
+    <li><b>Statevector wall</b> <span class="code">code</span> — Write a numpy function that allocates a random normalised complex128 state on n qubits and applies a Hadamard to qubit 0 by reshaping to <span class="mono">(2, 2**(n-1))</span>. Time it for n = 20…28 and fit the doubling. Extrapolate memory and time to n = 50. A good answer reports ~16·2ⁿ bytes, shows runtime doubling per qubit, and explains why tensor networks escape this wall only for low-entanglement states.</li>
+    <li><b>Cancellation vs coin flips</b> — Take two paths to the same output with amplitudes <span class="mono">+1/√2 · 1/√2</span> and <span class="mono">−1/√2 · 1/√2</span>. Compute the output probability quantumly and classically, using squared magnitudes as path probabilities. Then explain in two sentences why no stochastic matrix with non-negative entries can produce the quantum answer.</li>
+    <li><b>Grover break-even</b> — Using the scorecard's model, derive the general break-even <span class="mono">N* = (P · t_q / t_c)²</span> for P classical cores. With t_c = 1 ns, find the largest t_q for which the quantum machine wins within one day against P = 1,000. A good answer gets quantum time = P·t_q²/t_c, so t_q ≈ 0.3 ms, and notes that a whole oracle call must then fit in a few hundred surface-code cycles of ~1 µs.</li>
+    <li><b>Classify the pitch</b> — Place each in a scorecard row and justify: (a) breaking AES-128 by key search; (b) ground-state energy of an iron–sulfur catalyst; (c) "quantum portfolio optimisation"; (d) 3-SAT on 1,000 variables. Expect: (a) quadratic, so AES-256 suffices; (b) instance-dependent exponential; (c) unproven/heuristic; (d) still exponential, about 2⁵⁰⁰ even with Grover.</li>
+  </ol>
+
+  <div class="callout">Next: <a class="lnk" href="p03.html">03 Enter the Quantum World</a> · Back to the <a class="lnk" href="../index.html#why">map</a>.</div>
+</main>
+<footer>Quantum Computing, Mapped · original explanation, written November 2026. Current-state claims link to their sources; company claims are marked as such.</footer>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>03 Enter the Quantum World — Quantum Computing, Mapped</title>
+<meta name="description" content="The physics a software engineer needs: amplitudes, interference, the Born rule, entanglement, no-cloning, decoherence, and how real qubits are built." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>QUANTUM&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#why">← field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">PART 03 · WHY QUANTUM</span><span class="mono">11 min read</span></div>
+  <h1>Enter the Quantum World</h1>
+  <div class="authors">Quantum Computing, Mapped · part 03 of 09 · current to November 2026</div>
+
+  <div class="tldr"><b>TL;DR —</b> Quantum mechanics, for our purposes, is a strange kind of probability theory: a system is described by complex <i>amplitudes</i>, not probabilities, and amplitudes can cancel. Measurement turns amplitudes into probabilities by squaring their magnitudes, and it gives you one sample per run. Entangled systems share correlations that no classical hidden-variable story explains, but you still cannot use them to send a message. You cannot copy an unknown quantum state, and the environment constantly tries to "measure" your qubits, which is decoherence. Remember this: <b>quantum advantage comes from interference, and decoherence is what kills interference.</b></div>
+
+  <p class="lead">Page 02 argued that nature keeps an exponentially large state for interacting quantum systems and that a computer built from the same rules might exploit it. Before page 04 turns that into gates and circuits, you need the rules themselves. This page covers the handful of physical facts that the whole field rests on, each as a small calculation rather than a metaphor, and ends with the physical systems people actually build qubits from.</p>
+
+  <h2 id="amplitudes">Superposition means amplitudes, not "both at once"</h2>
+  <p>A classical bit is 0 or 1. A probabilistic bit (page 01) is a vector <span class="mono">(p₀, p₁)</span> with non-negative entries summing to 1. A qubit is a vector of two <i>complex</i> numbers:</p>
+  <div class="math">|ψ⟩ = α|0⟩ + β|1⟩,   α, β ∈ ℂ,   |α|² + |β|² = 1</div>
+  <p>The popular gloss, "the qubit is 0 and 1 at the same time", is misleading in a specific way: it suggests the qubit secretly holds both answers and you just have to look. It doesn't. The state <span class="mono">|ψ⟩</span> is the complete description. When you measure, you get one bit, and the amplitudes only set the odds. What makes this different from a coin flip you haven't looked at yet is that α and β carry a <i>sign and phase</i>, and those phases can be made to add or cancel before you look.</p>
+  <p>Two details matter later. First, the <b>global phase</b> is unobservable: <span class="mono">|ψ⟩</span> and <span class="mono">e^{iγ}|ψ⟩</span> give identical statistics for every experiment, so you can always take α real and non-negative. Second, the <b>relative phase</b> between α and β is physical. The states</p>
+  <div class="math">|+⟩ = (|0⟩ + |1⟩)/√2
+|−⟩ = (|0⟩ − |1⟩)/√2</div>
+  <p>both give 0 or 1 with probability ½ if you measure directly, yet they are perfectly distinguishable by a different measurement, because they are orthogonal: <span class="mono">⟨+|−⟩ = 0</span>. A probability vector cannot express this difference; an amplitude vector can. Every qubit state fits on the Bloch sphere, <span class="mono">|ψ⟩ = cos(θ/2)|0⟩ + e^{iφ} sin(θ/2)|1⟩</span>, where θ sets the measurement odds and φ is exactly that relative phase.</p>
+  <p>Same story for n qubits: <span class="mono">|ψ⟩ = Σ_x a_x |x⟩</span> over all x ∈ {0,1}ⁿ, with 2ⁿ complex amplitudes and <span class="mono">Σ|a_x|² = 1</span>. That 2ⁿ is the exponential state space page 02 talked about. Whether it buys you anything depends entirely on the next section.</p>
+
+  <h2 id="interference">Interference: a two-amplitude calculation</h2>
+  <p>The cleanest experiment in quantum mechanics is the Mach–Zehnder interferometer. A single photon hits a 50/50 beam splitter, travels one of two paths, the paths are recombined at a second beam splitter, and two detectors D0 and D1 wait at the outputs. One arm has an adjustable phase shift φ (a sliver of glass that lengthens the path).</p>
+
+  <svg viewBox="0 0 360 210" role="img" aria-label="Mach–Zehnder interferometer: source, two beam splitters, two mirrors, a phase shifter on the lower arm, detectors D0 and D1">
+    <line x1="10" y1="170" x2="80" y2="170" stroke="#F5A524" stroke-width="2"/>
+    <line x1="80" y1="170" x2="260" y2="170" stroke="#35CFE0" stroke-width="2"/>
+    <line x1="80" y1="170" x2="80" y2="60" stroke="#35CFE0" stroke-width="2"/>
+    <line x1="80" y1="60" x2="260" y2="60" stroke="#35CFE0" stroke-width="2"/>
+    <line x1="260" y1="170" x2="260" y2="60" stroke="#35CFE0" stroke-width="2"/>
+    <line x1="260" y1="60" x2="325" y2="60" stroke="#F5A524" stroke-width="2"/>
+    <line x1="260" y1="60" x2="260" y2="22" stroke="#F5A524" stroke-width="2" stroke-dasharray="4 3"/>
+    <line x1="66" y1="184" x2="94" y2="156" stroke="#E7EBF1" stroke-width="2"/>
+    <line x1="246" y1="74" x2="274" y2="46" stroke="#E7EBF1" stroke-width="2"/>
+    <line x1="66" y1="74" x2="94" y2="46" stroke="#737D8B" stroke-width="5"/>
+    <line x1="246" y1="184" x2="274" y2="156" stroke="#737D8B" stroke-width="5"/>
+    <rect x="160" y="158" width="20" height="24" fill="#262C35" stroke="#F5A524" stroke-width="1.5"/>
+    <rect x="325" y="48" width="26" height="24" rx="3" fill="#262C35" stroke="#E7EBF1" stroke-width="1.5"/>
+    <rect x="247" y="2" width="26" height="20" rx="3" fill="#262C35" stroke="#E7EBF1" stroke-width="1.5"/>
+    <text x="10" y="160" fill="#737D8B" font-family="IBM Plex Mono" font-size="11">photon</text>
+    <text x="40" y="200" fill="#E7EBF1" font-family="IBM Plex Mono" font-size="11">BS1</text>
+    <text x="282" y="88" fill="#E7EBF1" font-family="IBM Plex Mono" font-size="11">BS2</text>
+    <text x="30" y="52" fill="#737D8B" font-family="IBM Plex Mono" font-size="11">mirror</text>
+    <text x="278" y="198" fill="#737D8B" font-family="IBM Plex Mono" font-size="11">mirror</text>
+    <text x="166" y="200" fill="#F5A524" font-family="IBM Plex Mono" font-size="12">φ</text>
+    <text x="329" y="64" fill="#E7EBF1" font-family="IBM Plex Mono" font-size="10">D0</text>
+    <text x="251" y="16" fill="#E7EBF1" font-family="IBM Plex Mono" font-size="10">D1</text>
+    <text x="150" y="52" fill="#737D8B" font-family="IBM Plex Mono" font-size="10">path a</text>
+    <text x="196" y="160" fill="#737D8B" font-family="IBM Plex Mono" font-size="10">path b</text>
+  </svg>
+
+  <p>Write the photon's state as two amplitudes, one per path, and model each beam splitter as the 2×2 unitary <span class="mono">B = (1/√2)[[1, 1], [1, −1]]</span> (one common convention; any 50/50 unitary gives the same physics). The photon enters in path a:</p>
+  <div class="math">start          (1, 0)
+after BS1      (1/√2)(1, 1)
+phase on b     (1/√2)(1, e^{iφ})
+after BS2      ½(1 + e^{iφ},  1 − e^{iφ})
+P(D0) = |1 + e^{iφ}|²/4 = cos²(φ/2)
+P(D1) = |1 − e^{iφ}|²/4 = sin²(φ/2)</div>
+  <p>At φ = 0 every photon lands in D0, and D1 never clicks. Now redo it with classical probability: each splitter is a fair coin, so the photon reaches D1 with probability ½ no matter what. The quantum answer differs because the two routes to D1 carry amplitudes +½ and −½, and amplitudes add before squaring. That is <b>destructive interference</b>, and it is the only mechanism by which a quantum algorithm beats a classical one: arrange the computation so that paths to wrong answers cancel and paths to right answers reinforce.</p>
+  <p>Block path b and the cancellation disappears: half the photons are absorbed, and of the survivors, half go to D1. Removing a possible route <i>increases</i> the rate at a detector. No story about the photon "really" taking one path survives that. Page 04 will notice that B is exactly the Hadamard gate H, and that this experiment is H, a phase, then H.</p>
+
+  <h2 id="measurement">Measurement and the Born rule</h2>
+  <p>Measuring n qubits in the computational basis returns a single bitstring x with probability</p>
+  <div class="math">P(x) = |a_x|²          (Born rule)</div>
+  <p>and afterwards the state <i>is</i> <span class="mono">|x⟩</span>; the other amplitudes are gone. Three engineering consequences follow.</p>
+  <p><b>One sample per run.</b> A 50-qubit state has about 10¹⁵ amplitudes, but a run hands you 50 bits. Estimating a single probability to precision ε takes on the order of 1/ε² repetitions. You cannot "read out the superposition"; page 04 makes this exact with the Holevo bound.</p>
+  <p><b>The basis is a choice.</b> Measuring <span class="mono">|+⟩</span> in the {|0⟩, |1⟩} basis gives a coin flip; applying H first and then measuring gives 0 every time. Measuring "in another basis" is just a unitary followed by the standard measurement, which is why hardware only ever needs to implement the one.</p>
+  <p><b>Measurement is irreversible and destructive.</b> Everything else in the model is a unitary (reversible) operation. Measurement is the one step that discards information, which is why algorithms delay it to the very end, and why error correction (page 06) measures carefully chosen <i>parities</i> of qubits rather than the qubits themselves.</p>
+  <p>The physics community still argues about what measurement <i>is</i> (collapse, many worlds, decoherence-plus-something). None of that changes a single prediction, and none of it matters for building or programming a quantum computer. Use the Born rule and move on.</p>
+
+  <h2 id="entanglement">Entanglement, and why it doesn't send messages</h2>
+  <p>Two qubits have four amplitudes. Some states factor into "qubit A's state ⊗ qubit B's state"; most don't. The canonical non-factorable state is a Bell state:</p>
+  <div class="math">|Φ⁺⟩ = (|00⟩ + |11⟩)/√2</div>
+  <p>Measure both qubits and you get 00 or 11, each with probability ½, never 01 or 10. Perfect correlation alone is unremarkable: two sealed envelopes holding matching cards do that. The surprise is that the correlation survives a change of basis. If both sides measure along the same angle (in the convention of exercise 2) they still always agree, and for angles Δθ apart the agreement rate is <span class="mono">cos²(Δθ)</span>. In 1964 John Bell showed that no model in which each qubit carries pre-assigned answers (local hidden variables) can reproduce those statistics. In the CHSH form of his inequality, a combination S of four correlations obeys <span class="mono">|S| ≤ 2</span> classically, while the Bell state reaches <span class="mono">2√2 ≈ 2.83</span>.</p>
+  <p>This is settled experimentally. In 2015 a Delft group closed the main loopholes simultaneously, with entangled electron spins 1.3 km apart, and the 2022 Nobel Prize in Physics went to Aspect, Clauser and Zeilinger for this line of experiments.</p>
+  <p>So can Alice signal Bob by choosing what to measure? No, and the reason is a one-line calculation. Whatever Alice does, Bob's qubit alone gives 0 or 1 with probability ½ each. (Formally, Bob's reduced state is <span class="mono">I/2</span> regardless of Alice's actions.) The correlation shows up only when the two lists of results are put side by side, and getting Alice's list to Bob takes an ordinary classical channel. Entanglement is a shared resource, not a wire. Protocols that use it, such as teleportation, always consume classical bits too.</p>
+  <p>For computation, entanglement is necessary but not sufficient. A quantum computation that never creates much entanglement can be simulated efficiently with tensor networks, so it's a precondition for advantage. But page 04 will show that some highly entangling circuits (Clifford circuits) are still easy for classical machines. Entanglement is the price of entry, not the source of speedup by itself.</p>
+
+  <h2 id="no-cloning">No-cloning</h2>
+  <p>Suppose some unitary U copies any state into a blank register: <span class="mono">U|ψ⟩|0⟩ = |ψ⟩|ψ⟩</span> for all ψ. Take two states ψ and φ and compare inner products before and after. Unitaries preserve inner products, so</p>
+  <div class="math">⟨φ|ψ⟩ = (⟨φ|⟨φ|)(|ψ⟩|ψ⟩) = ⟨φ|ψ⟩²</div>
+  <p>which forces <span class="mono">⟨φ|ψ⟩</span> to be 0 or 1. You can clone states from a known orthogonal set (that's just copying classical bits), but no device clones an unknown state. This is the Wootters–Zurek no-cloning theorem (1982), and it is pure linear algebra.</p>
+  <p>The engineering consequences are blunt. There is no backup copy of a qubit, no "read it a few times and vote", no signal amplifier for quantum data, and no checkpoint-and-restart mid-computation. Classical fault tolerance leans on all of those. Quantum error correction has to protect information it is not allowed to look at or copy, which is why it spreads one logical qubit across many physical ones and measures only collective parities. Page 06 is about the cost of that workaround. No-cloning is also what makes quantum key distribution work: an eavesdropper can't copy the qubits in flight without disturbing them.</p>
+
+  <h2 id="decoherence">Decoherence: the environment is always measuring</h2>
+  <p>A qubit is a physical thing, and it touches its surroundings: stray photons, phonons, fluctuating charges, magnetic noise. Each interaction slightly entangles the qubit with the environment:</p>
+  <div class="math">(α|0⟩ + β|1⟩) ⊗ |E⟩
+  →  α|0⟩|E₀⟩ + β|1⟩|E₁⟩</div>
+  <p>If the environment states <span class="mono">|E₀⟩</span> and <span class="mono">|E₁⟩</span> are different, the environment now holds partial "which-path" information. Any later interference between the |0⟩ and |1⟩ branches is scaled by the overlap <span class="mono">⟨E₀|E₁⟩</span>, and as that overlap decays toward 0 the interference fringes in the Mach–Zehnder calculation flatten out. The qubit behaves like a classical coin: probability <span class="mono">|α|²</span> for 0, <span class="mono">|β|²</span> for 1, and no phase left to exploit.</p>
+  <p>The density-matrix view makes this concrete. Write the state as <span class="mono">ρ = |ψ⟩⟨ψ|</span>. Its diagonal entries are the measurement probabilities; its off-diagonal entries ("coherences") hold the relative phases. Decoherence shrinks the off-diagonals and leaves the diagonal alone. When they reach zero, what remains is exactly page 01's probability vector. <b>Decoherence is the continuous drift from quantum computation back to probabilistic computation.</b> It also explains why the everyday world looks classical: big objects decohere almost instantly.</p>
+  <p>Hardware people summarise this with two timescales, T1 (energy relaxation, |1⟩ decaying to |0⟩) and T2 (loss of phase coherence). Gate errors add to the damage, and so do imperfect control pulses. Page 06 treats these as error rates and shows how error correction fights them. The design target is simple to state: run many gates well inside the coherence time, and correct what slips through.</p>
+
+  <div class="callout">The one model to carry forward: a quantum computer is a machine for steering interference among 2ⁿ complex amplitudes, then sampling one outcome. Everything hard about the field follows from three facts on this page: you get one sample per run (Born rule), you cannot copy the state to protect it (no-cloning), and the environment destroys the phases you need (decoherence).</div>
+
+  <h2 id="modalities">What qubits are actually made of</h2>
+  <p>Any well-isolated two-level quantum system can be a qubit. The difficulty is getting three things together: long coherence (isolation), fast high-fidelity gates (strong control), and many qubits wired together (scale). Strong control and isolation pull against each other, and each modality picks a different compromise. The table is qualitative on purpose; record numbers change monthly and live on pages 07 and 08.</p>
+  <div class="scroll-x"><table class="kv">
+    <tr><th>Modality</th><th>The qubit is</th><th>Strength</th><th>Catch</th></tr>
+    <tr><td>Superconducting (transmons)</td><td>A microwave circuit with Josephson junctions on a chip at ~10 mK</td><td>Fast gates (tens of ns), lithographic fabrication, most mature QEC demos</td><td>Short coherence, nearest-neighbour wiring, dilution fridges and per-qubit control lines</td></tr>
+    <tr><td>Trapped ions</td><td>Internal levels of a single ion held by electric fields in vacuum</td><td>Best gate fidelities, long coherence, effectively all-to-all connectivity within a trap</td><td>Slow gates (microseconds and up); scaling needs ion shuttling or photonic links</td></tr>
+    <tr><td>Neutral atoms</td><td>Atoms held in optical tweezers, entangled via Rydberg states</td><td>Hundreds to thousands of identical qubits; atoms can be physically moved to change connectivity</td><td>Slow cycle times, atom loss, laser control complexity</td></tr>
+    <tr><td>Photonic</td><td>A single photon's polarisation, path or time bin</td><td>Little decoherence in flight, chip-scale manufacturing, natural for networking</td><td>Photon loss; photons don't interact, so entangling gates are probabilistic and need measurement-based schemes</td></tr>
+    <tr><td>Spins in silicon</td><td>An electron or nuclear spin in a quantum dot or donor atom</td><td>Tiny footprint, compatible with CMOS fabs, can run warmer than transmons</td><td>Device-to-device variability, crowded control wiring, fewer large demos so far</td></tr>
+    <tr><td>Topological</td><td>A qubit stored non-locally in Majorana zero modes of a nanowire device</td><td>Hardware-level protection against local noise, in principle</td><td>Whether the claimed devices are topological qubits at all is <a href="https://hackaday.com/2026/06/30/microsofts-topological-quantum-computing-claims-once-again-in-question/" target="_blank" rel="noopener">contested</a> <span class="tag co">company claim</span></td></tr>
+  </table></div>
+  <p>Two patterns are worth noticing. Fast modalities (superconducting, spins) tend to have local connectivity and need many physical qubits per logical one. Slow modalities (ions, atoms) offer flexible connectivity, which suits the denser codes discussed on page 06, but they pay in wall-clock time. No modality has won. That's why page 07 is organised by modality, and why "how many qubits" is a poor question without "how good, how connected, how fast".</p>
+
+  <h2 id="sources">Sources and further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://doi.org/10.1103/PhysicsPhysiqueFizika.1.195" target="_blank" rel="noopener">On the Einstein Podolsky Rosen paradox</a> — J. S. Bell (1964) · the original proof that no local hidden-variable model matches quantum correlations.</li>
+    <li><a href="https://arxiv.org/abs/1508.05949" target="_blank" rel="noopener">Experimental loophole-free violation of a Bell inequality using entangled electron spins separated by 1.3 km</a> — Hensen et al. (2015) · the experiment that closed the main loopholes together.</li>
+    <li><a href="https://www.nobelprize.org/prizes/physics/2022/press-release/" target="_blank" rel="noopener">The Nobel Prize in Physics 2022, press release</a> — Royal Swedish Academy of Sciences (2022) · readable account of the entanglement experiments by Aspect, Clauser and Zeilinger.</li>
+    <li><a href="https://www.nature.com/articles/299802a0" target="_blank" rel="noopener">A single quantum cannot be cloned</a> — W. K. Wootters and W. H. Zurek (1982) · the no-cloning theorem, one page long.</li>
+    <li><a href="https://arxiv.org/abs/quant-ph/0105127" target="_blank" rel="noopener">Decoherence, einselection, and the quantum origins of the classical</a> — W. H. Zurek (2001) · the standard review of how the environment turns amplitudes into probabilities.</li>
+    <li><a href="https://www.preskill.caltech.edu/ph229/" target="_blank" rel="noopener">Physics 219/Computer Science 219: Quantum Computation, lecture notes</a> — J. Preskill (Caltech) · free, rigorous notes; chapters 2–4 cover states, measurement, entanglement and decoherence.</li>
+    <li><a href="https://arxiv.org/abs/1904.06560" target="_blank" rel="noopener">A Quantum Engineer's Guide to Superconducting Qubits</a> — Krantz et al. (2019) · transmons, control, readout and noise from an engineering angle.</li>
+    <li><a href="https://arxiv.org/abs/1904.04178" target="_blank" rel="noopener">Trapped-Ion Quantum Computing: Progress and Challenges</a> — Bruzewicz et al. (2019) · the ion modality's trade-offs.</li>
+    <li><a href="https://arxiv.org/abs/2006.12326" target="_blank" rel="noopener">Quantum computing with neutral atoms</a> — Henriet et al. (2020) · tweezers, Rydberg gates and reconfigurable arrays.</li>
+    <li><a href="https://arxiv.org/abs/1907.06331" target="_blank" rel="noopener">Photonic quantum information processing: a concise review</a> — Slussarenko and Pryde (2019) · why photons are easy to keep coherent and hard to make interact.</li>
+    <li><a href="https://arxiv.org/abs/2112.08863" target="_blank" rel="noopener">Semiconductor Spin Qubits</a> — Burkard et al. (2021) · spin qubits in silicon and germanium, and the CMOS argument.</li>
+    <li><a href="https://hackaday.com/2026/06/30/microsofts-topological-quantum-computing-claims-once-again-in-question/" target="_blank" rel="noopener">Microsoft's topological quantum computing claims once again in question</a> — Hackaday (2026) · state of the dispute over the Majorana devices.</li>
+  </ul>
+
+  <h2 id="exercises">Check yourself</h2>
+  <ol class="exercises">
+    <li><b>Interferometer in numpy</b> <span class="code">code</span> — Represent the photon as a length-2 complex vector, B as the 2×2 matrix above and the phase as <span class="mono">diag(1, e^{iφ})</span>. Sweep φ from 0 to 2π and plot P(D0), P(D1); confirm cos²(φ/2). Then model a blocked arm (zero the path-b amplitude after BS1) and show P(D1) rises from 0 to ¼ at φ = 0. Finally, replace amplitudes with probabilities and stochastic matrices (page 01) and show that the fringes vanish. A good answer is three short plots and one sentence on why amplitudes add before squaring.</li>
+    <li><b>CHSH from scratch</b> <span class="code">code</span> — Build <span class="mono">|Φ⁺⟩</span> as a 4-vector. For a measurement at angle θ use the observable <span class="mono">cos(2θ)Z + sin(2θ)X</span>. Compute the correlation <span class="mono">E(a,b) = ⟨Φ⁺|A⊗B|Φ⁺⟩</span> for Alice's angles {0, π/4} and Bob's {π/8, −π/8}, combine them as <span class="mono">S = E(a,b) + E(a,b′) + E(a′,b) − E(a′,b′)</span>, and get 2√2. Then show that Bob's marginal probability of outcome 0 is ½ for every choice of Alice's angle: no signalling.</li>
+    <li><b>Why CNOT isn't a cloner</b> — CNOT copies |0⟩ and |1⟩ into a blank target: |x⟩|0⟩ → |x⟩|x⟩. Apply it to <span class="mono">|+⟩|0⟩</span> by hand. Show the output is <span class="mono">|Φ⁺⟩</span>, not <span class="mono">|+⟩|+⟩</span>, and compute the overlap between the two (it is 1/√2). A good answer connects this to the inner-product proof above.</li>
+    <li><b>Decoherence as lost visibility</b> — In the interferometer, let the photon's path become entangled with a stray environment so that the two arms leave it in states with overlap <span class="mono">⟨E₀|E₁⟩ = c</span>, real. Show <span class="mono">P(D0) = (1 + c·cos φ)/2</span>. What are the fringe visibility at c = 1, 0.5 and 0? A good answer explains why c = 0 is exactly the classical coin model.</li>
+  </ol>
+
+  <div class="callout">Next: <a class="lnk" href="p04.html">04 Fundamentals of Quantum Computation</a> · Back to the <a class="lnk" href="../index.html#why">map</a>.</div>
+</main>
+<footer>Quantum Computing, Mapped · original explanation, written November 2026. Current-state claims link to their sources; company claims are marked as such.</footer>
+</body>
+</html>

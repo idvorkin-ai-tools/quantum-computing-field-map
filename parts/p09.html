@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>09 Conclusion — Quantum Computing, Mapped</title>
+<meta name="description" content="What to believe about quantum computing in November 2026: honest timelines, signals to watch, PQC migration now, how to learn hands-on, what not to buy." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>QUANTUM&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#now">← field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box bb mono">PART 09 · WHERE IT STANDS</span><span class="mono">11 min read</span></div>
+  <h1>Conclusion</h1>
+  <div class="authors">Quantum Computing, Mapped · part 09 of 09 · current to November 2026</div>
+
+  <div class="tldr"><b>TL;DR —</b> What should a strong engineer believe about quantum computing in November 2026, and what should they do about it? Error correction now works in the lab: logical error rates fall as codes grow. Nobody has yet run a useful computation that a classical machine couldn't also do. Vendors promise fault-tolerant machines around 2029, and DARPA is formally asking whether utility scale is reachable by 2033. The one action that can't wait is post-quantum cryptography. NIST deprecates RSA and elliptic-curve public-key crypto after 2030 and disallows it after 2035, and data recorded today can be decrypted later.</div>
+
+  <p class="lead">Pages 01–08 built the argument piece by piece: what classical computation is, why amplitudes and interference give a different model, what that model can and cannot speed up, why noise makes it so expensive, who is building it, and what the last two years actually showed. This page turns that into positions you can hold, signals that should move them, and things to do on an ordinary Monday. Every current-state fact links to its source. Where I give a judgment rather than a fact, I say so.</p>
+
+  <h2 id="believe">What to believe, November 2026</h2>
+
+  <p><strong>Below-threshold error correction is real.</strong> In December 2024 Google's Willow chip ran a distance-7 surface-code memory. Its logical error rate fell by a factor Λ ≈ 2.14 each time the code distance went up by two, and the logical qubit outlived the best physical qubit by about 2.4×, with decoding in real time (<a href="https://www.nature.com/articles/s41586-024-08449-y" target="_blank" rel="noopener">Nature</a>) <span class="tag peer">peer-reviewed</span>. That is the threshold theorem from page 06 seen working in hardware, not just on paper. USTC's Zuchongzhi 3.2 later reproduced a below-threshold distance-7 surface code at Λ = 1.40 (<a href="https://quantumcomputingreport.com/ustcs-zuchongzhi-3-2-achieves-below-threshold-qec-milestone/" target="_blank" rel="noopener">report on the PRL paper</a>) <span class="tag peer">peer-reviewed</span>. Quantinuum's colour-code report on Helios gives Λ ≈ 12 and a per-cycle memory error of about 5×10⁻⁶ at d = 7 (<a href="https://www.quantinuum.com/fault-tolerance-by-2029" target="_blank" rel="noopener">technical report</a>) <span class="tag pre">preprint</span>. Two caveats apply: that figure is memory, not gates, and the report has not been peer reviewed.</p>
+
+  <p><strong>"N logical qubits" headlines mostly still mean error detection.</strong> The largest logical-qubit counts of 2026 came from codes that detect errors and throw away the bad runs. IBM and the University of Chicago's 70-logical-qubit result used post-selected error detection. Its first instance was then simulated exactly on GPUs, and the authors revised it to a harder 64-qubit circuit (<a href="https://arxiv.org/abs/2607.25941" target="_blank" rel="noopener">arXiv 2607.25941</a>) <span class="tag pre">preprint</span>. Infleqtion's 30 logical qubits use a distance-2 code that detects one error and corrects none (<a href="https://infleqtion.com/infleqtion-achieves-30-entangled-logical-qubits-on-its-sqale-quantum-computer/" target="_blank" rel="noopener">announcement</a>) <span class="tag co">company claim</span>. These are useful engineering steps, but they are not fault-tolerant computers.</p>
+
+  <p><strong>Nobody has shown useful quantum advantage.</strong> Google's "Quantum Echoes" claims the first <em>verifiable</em> beyond-classical computation. The roughly 13,000× speedup in that claim is Google's own estimate (<a href="https://blog.google/technology/research/quantum-echoes-willow-verifiable-quantum-advantage/" target="_blank" rel="noopener">Google</a>) <span class="tag peer">peer-reviewed</span>. It is a physics measurement, not a business workload. No optimisation or machine-learning result has shown quantum advantage. The honest scorecard from pages 02 and 05 still holds: the strong cases are simulating strongly correlated chemistry and materials, and Shor's algorithm, which breaks public-key crypto. Everything else is modest or unproven.</p>
+
+  <p><strong>The topological route is still contested.</strong> Microsoft's Majorana claims drew a critique published in Nature in June 2026. Microsoft stands by its work, and critics say the later Majorana 2 has the same problems (<a href="https://hackaday.com/2026/06/30/microsofts-topological-quantum-computing-claims-once-again-in-question/" target="_blank" rel="noopener">Hackaday summary</a>). Until a topological qubit is shown unambiguously, don't plan around it.</p>
+
+  <h2 id="timeline">Timelines, as honest ranges</h2>
+
+  <p>Here is what the builders say. Every row is a promise, not a measurement.</p>
+
+  <div class="scroll-x"><table class="kv">
+    <thead><tr><th>Who</th><th>Machine</th><th>Stated target</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>IBM</td><td>Starling: 200 logical qubits, 10⁸ gates, qLDPC bicycle codes; then Blue Jay, ~2,000 logical</td><td>2029; Blue Jay 2033+</td><td><a href="https://www.ibm.com/quantum/blog/large-scale-ftqc" target="_blank" rel="noopener">roadmap</a> <span class="tag co">company claim</span></td></tr>
+      <tr><td>Quantinuum</td><td>Sol, then Apollo (universal fault-tolerant)</td><td>2027; Apollo 2029</td><td><a href="https://www.hpcwire.com/2025/11/05/quantinuum-introduces-helios-quantum-system-as-roadmap-advances-toward-apollo/" target="_blank" rel="noopener">HPCwire</a> <span class="tag co">company claim</span></td></tr>
+      <tr><td>QuEra + AWS</td><td>Libra, 256 logical qubits on Braket</td><td>2028</td><td><a href="https://postquantum.com/industry-news/quera-libra-fault-tolerant-quantum-computer-aws-2028/" target="_blank" rel="noopener">report</a> <span class="tag co">company claim</span></td></tr>
+      <tr><td>Atom Computing + Microsoft</td><td>Magne, 50 logical qubits from ~1,200 atoms</td><td>~2027</td><td><a href="https://quantumcomputingreport.com/denmarks-qunorth-to-acquire-50-logical-qubit-magne-quantum-computer-from-atom-computing-and-microsoft/" target="_blank" rel="noopener">report</a> <span class="tag co">company claim</span></td></tr>
+      <tr><td>Infleqtion</td><td>100 logical qubits; then 1,000</td><td>2028; 2030</td><td><a href="https://infleqtion.com/infleqtion-achieves-30-entangled-logical-qubits-on-its-sqale-quantum-computer/" target="_blank" rel="noopener">announcement</a> <span class="tag co">company claim</span></td></tr>
+      <tr><td>DARPA QBI</td><td>Asks whether <em>any</em> approach reaches utility scale (value exceeds cost)</td><td>by 2033</td><td><a href="https://www.darpa.mil/news/2026/four-more-teams-enter-quantum-benchmarking-initiative-final-stage" target="_blank" rel="noopener">DARPA</a> (government)</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>Read the DARPA row carefully: it is a question being asked, not a forecast. In October 2026 Atom Computing, Diraq, IBM and IonQ entered the programme's final Stage C, joining Microsoft and PsiQuantum, which were already there. That is six serious teams with very different hardware being independently tested against one yardstick. Treat that as the most credible scoreboard available.</p>
+
+  <p><strong>This page's judgment</strong> (an opinion, not a sourced fact):</p>
+  <ul>
+    <li><strong>Small fault-tolerant machines</strong> (tens to a few hundred logical qubits running corrected gates, including the T gates) could plausibly appear between 2028 and the early 2030s. Every vendor date in the table assumes nothing slips. Historically, roadmaps in this field slip more often than they arrive early.</li>
+    <li><strong>The first useful advantage</strong> will most likely come in chemistry or materials simulation, and will look modest: one molecule, one catalyst, verified against experiment. It won't look like a general-purpose speedup.</li>
+    <li><strong>A cryptographically relevant machine</strong> needs a lot more than Starling-class hardware. By the site's plain surface-code model, RSA-2048 needs on the order of 1,400 logical qubits running for days (try the RSA preset in the page 06 calculator). The best published estimates are under a million noisy physical qubits for about a week (<a href="https://arxiv.org/abs/2505.15917" target="_blank" rel="noopener">Gidney 2025</a>) <span class="tag pre">preprint</span>. One preprint gets under 100,000 if long-range qLDPC connectivity can be built (<a href="https://arxiv.org/abs/2602.11457" target="_blank" rel="noopener">Pinnacle</a>) <span class="tag pre">preprint</span>. The date is uncertain, but those estimates keep falling, and that is the wrong direction to bet against.</li>
+  </ul>
+
+  <h2 id="signals">What would change your mind</h2>
+
+  <p>Don't track headlines. Track a handful of criteria, each of which separates real progress from good marketing. These are tests to apply, not predictions.</p>
+
+  <ul>
+    <li><strong>Corrected logical <em>gates</em> at distance ≥ 5, not just memory.</strong> A memory experiment shows a qubit can be stored. Computing needs two-qubit logical gates and non-Clifford operations (magic states) that also improve as the code grows.</li>
+    <li><strong>Λ holding as d keeps growing.</strong> The surface-code heuristic <span class="mono">p_L ≈ 0.1 · (p/p_th)^((d+1)/2)</span> assumes errors stay independent. Correlated errors, leakage or cosmic-ray bursts would show up as Λ flattening at larger d. A clean d = 9 or d = 11 with steady Λ would be strong evidence.</li>
+    <li><strong>Real-time decoding at scale.</strong> Each syndrome round has to be decoded in about a microsecond (for superconducting qubits) without a backlog. Watch for decoders running live on hundreds of logical qubits, not offline on recorded data.</li>
+    <li><strong>A qLDPC code running in hardware.</strong> IBM's 2029 plan and the sub-100k RSA estimate both rest on codes that need non-local connections. A working bicycle-code memory on real hardware would cut the expected overhead by roughly an order of magnitude.</li>
+    <li><strong>An advantage claim that survives a year of classical attack.</strong> The IBM–UChicago episode shows how this works: the claim is published, other groups try to simulate it classically, and the claim is revised. A result that is still standing after that, on a problem someone cares about, is the real milestone.</li>
+    <li><strong>An unambiguous topological qubit.</strong> If it arrived it would change the overhead picture completely. If it doesn't, nothing in the plan above depends on it.</li>
+  </ul>
+
+  <p>Signals that should <em>not</em> move you: physical qubit counts on their own, "logical qubits" with no stated distance, fidelities with no denominator, and any advantage claim about optimisation or ML that skips the best classical baseline.</p>
+
+  <h2 id="pqc">What to do on Monday: post-quantum migration</h2>
+
+  <p>You don't need a quantum computer to be affected by one. The threat model is "harvest now, decrypt later": an adversary records your TLS sessions or encrypted archives today and decrypts them once a large enough machine exists. Mosca's rule of thumb says when to worry. Let <span class="mono">x</span> be how long your data must stay secret, <span class="mono">y</span> how long your migration will take, and <span class="mono">z</span> how long until a cryptographically relevant QC exists.</p>
+
+  <div class="math">if  x + y > z   then you are already late
+
+e.g. x = 10 yr (health records), y = 5 yr
+     → exposed unless z > 15 yr, i.e. after ~2041</div>
+
+  <p>You don't control <span class="mono">z</span>, but the standards bodies have set your <span class="mono">y</span> for you. NIST finalised the replacements in August 2024: FIPS 203 (ML-KEM, key encapsulation), FIPS 204 (ML-DSA, signatures) and FIPS 205 (SLH-DSA, hash-based signatures). FN-DSA (Falcon) and the backup KEM HQC are still being standardised (<a href="https://csrc.nist.gov/projects/post-quantum-cryptography" target="_blank" rel="noopener">NIST PQC project</a>). NIST IR 8547, finalised in October 2026, deprecates <em>all</em> quantum-vulnerable public-key algorithms after 2030 and disallows them after 2035, regardless of key size. That covers RSA, ECDSA, EdDSA, DH, MQV and ECDH. The report also cites US federal requirements for the most sensitive systems: PQC key establishment by December 31, 2030 and PQC signatures by December 31, 2031 (<a href="https://csrc.nist.gov/pubs/ir/8547/final" target="_blank" rel="noopener">NIST IR 8547</a>). Symmetric crypto and hashes are a different story. Grover gives only a quadratic speedup, and page 05 showed that error-correction overhead swamps it, so AES-256 and SHA-256/384 are fine.</p>
+
+  <p>The practical checklist:</p>
+  <ol class="exercises">
+    <li><b>Inventory.</b> Find every place you use public-key crypto: TLS termination, SSH, code signing, JWT/JWS signing keys, VPNs, HSM-backed keys, client libraries, and protocols you embed in firmware. Most organisations discover their real exposure in third-party dependencies.</li>
+    <li><b>Rank by secrecy lifetime.</b> Anything that must stay confidential past roughly 2035 is already exposed to harvest-now attacks. Key exchange protecting long-lived secrets comes first. Signatures matter later, because a forged signature only helps an attacker once the machine exists.</li>
+    <li><b>Build crypto-agility.</b> Algorithm choice should be configuration, not code. Negotiated suites, versioned key formats, and no hard-coded key or signature sizes. ML-DSA signatures and ML-KEM ciphertexts are far larger than ECDSA and ECDH ones, so check your buffer limits, certificate chains and MTU assumptions now.</li>
+    <li><b>Prefer hybrid key exchange during the transition.</b> Combine a classical exchange with ML-KEM so the session stays secure if either one holds. That hedges against an implementation flaw in the newer scheme while still defeating harvest-now attacks.</li>
+    <li><b>Put the dates in your roadmap.</b> 2030 deprecation and 2035 disallowance are planning facts, whatever you believe about quantum hardware timelines.</li>
+  </ol>
+
+  <div class="callout"><b>The thing to carry away:</b> the quantum-hardware question is genuinely uncertain, but your crypto decision isn't. Error correction works in the lab, but nobody can yet build a useful machine, and every plausible date for a code-breaking one falls inside the lifetime of data you're encrypting today. Migrate to ML-KEM and ML-DSA on NIST's 2030/2035 schedule, make your systems crypto-agile, and judge every quantum headline by its code distance, whether it corrects or only detects errors, and whether it survives classical attack.</div>
+
+  <h2 id="learn">Learning hands-on, and what not to buy</h2>
+
+  <p><strong>Learn by simulating.</strong> The math on page 04 fits in a few dozen lines of numpy. The state is a length-2ⁿ complex vector. A gate on qubit k is a reshape, a tensor contraction and a reshape back. Measurement samples x with probability <span class="mono">|a_x|²</span>. If you build that yourself, superposition, interference and entanglement turn into things you've debugged rather than metaphors. Around 25 qubits, the 2ⁿ blow-up stops being abstract: 2²⁵ complex128 amplitudes take 512 MiB, and each extra qubit doubles that.</p>
+
+  <p>Then move to a real framework. IBM's <a href="https://quantum.cloud.ibm.com/docs/en/guides" target="_blank" rel="noopener">Qiskit documentation</a> and Google's <a href="https://quantumai.google/cirq" target="_blank" rel="noopener">Cirq</a> both let you build circuits, run them on simulators with realistic noise models, and submit small jobs to real hardware. Run Bernstein–Vazirani, a Bell-state test and a three-qubit repetition code on a noisy simulator, then on hardware. The gap between the two teaches you page 06 better than any prose.</p>
+
+  <p><strong>What not to buy.</strong> Be sceptical of any pitch that puts a quantum speedup on optimisation, machine learning, portfolio construction or "big data" today. The reasons are structural:</p>
+  <ul>
+    <li><strong>Loading the data is the bottleneck.</strong> Encoding N classical numbers into amplitudes generally costs at least O(N), and you can read out only one sample per run (the Holevo bound from page 04). Aaronson's <a href="https://www.nature.com/articles/nphys3272" target="_blank" rel="noopener">"Read the fine print"</a> lists the conditions HHL-style speedups need, and real problems rarely meet them.</li>
+    <li><strong>Quadratic speedups lose to overhead.</strong> A Grover-type √N gain has to pay for error correction that makes every logical operation many orders of magnitude slower than a classical one. Babbush et al. <a href="https://arxiv.org/abs/2011.04149" target="_blank" rel="noopener">show</a> that, for realistic machines, quadratic speedups don't pay off for problems of practical size.</li>
+    <li><strong>Heuristics have no proof.</strong> QAOA and annealing are heuristics without guaranteed speedups. Several proposed exponential ML speedups were later "dequantised" by classical algorithms. As of this writing, no optimisation or ML workload has shown quantum advantage.</li>
+  </ul>
+  <p>The legitimate exception is <em>exploratory</em> spending: a small team building fluency and running chemistry-style pilots, budgeted as R&amp;D with no production expectations.</p>
+
+  <h2 id="recap">The whole map on one screen</h2>
+
+  <div class="scroll-x"><table class="kv">
+    <thead><tr><th>Part</th><th>The one idea</th></tr></thead>
+    <tbody>
+      <tr><td><a class="lnk" href="p01.html">01 Fundamentals of Classical Computation</a></td><td>Circuits, universal gates and reversible logic. Probabilistic computation is a 2ⁿ vector of non-negative probabilities (L1 norm) evolved by stochastic matrices. BPP and the extended Church–Turing thesis.</td></tr>
+      <tr><td><a class="lnk" href="p02.html">02 Why Quantum?</a></td><td>Nature's state space is exponential (Feynman's argument). The speedups that exist are exponential for simulation and period finding, and only quadratic for search. BQP is not believed to contain NP-complete problems.</td></tr>
+      <tr><td><a class="lnk" href="p03.html">03 Enter the Quantum World</a></td><td>Amplitudes, not "both at once". Interference, the Born rule, entanglement without signalling, no-cloning, decoherence, and the hardware modalities and their trade-offs.</td></tr>
+      <tr><td><a class="lnk" href="p04.html">04 Fundamentals of Quantum Computation</a></td><td>State vectors in ℂ^(2ⁿ) with the L2 norm, unitaries and tensor products. Clifford+T is universal, and the T gate is the costly ingredient. HH|0⟩ = |0⟩ by interference. One sample per run.</td></tr>
+      <tr><td><a class="lnk" href="p05.html">05 Capabilities of Quantum Computation</a></td><td>Shor breaks RSA and ECC. Chemistry simulation is the strongest useful case. Grover is quadratic and swamped by overhead. Optimisation and ML are unproven.</td></tr>
+      <tr><td><a class="lnk" href="p06.html">06 Challenges of Quantum Computation</a></td><td>Below threshold, p_L ≈ 0.1·(p/p_th)^((d+1)/2). At p = 10⁻³, d ≈ 21 gives ~900 physical qubits per logical. Magic states, real-time decoding, and qLDPC codes as the way to reduce overhead.</td></tr>
+      <tr><td><a class="lnk" href="p07.html">07 Dominant Institutions in Quantum Computing</a></td><td>Who builds what: superconducting, trapped-ion, neutral-atom, photonic, spin and topological. Hyperscaler clouds and government programmes such as DARPA QBI.</td></tr>
+      <tr><td><a class="lnk" href="p08.html">08 Recent Breakthroughs</a></td><td>From Willow below threshold to 2026's logical-qubit race. What a "logical qubit" meant in each announcement, and how to read the next press release.</td></tr>
+      <tr><td><a class="lnk" href="p09.html">09 Conclusion</a></td><td>Error correction works but useful machines don't exist yet. Migrate to PQC on NIST's 2030/2035 schedule, learn by simulating, and don't buy speedups nobody has shown.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="sources">Sources and further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://www.nature.com/articles/s41586-024-08449-y" target="_blank" rel="noopener">Quantum error correction below the surface code threshold</a> — Google Quantum AI (2024) · Λ ≈ 2.14 at d = 7: the experiment that made the threshold theorem concrete.</li>
+    <li><a href="https://www.quantinuum.com/fault-tolerance-by-2029" target="_blank" rel="noopener">Quantum error correction well below the color code threshold</a> — Quantinuum (2026) · Λ ≈ 12 colour-code memory on Helios. Technical report, not peer reviewed.</li>
+    <li><a href="https://arxiv.org/abs/2607.25941" target="_blank" rel="noopener">Sampling hard circuits with verifiably high fidelity</a> — IBM and University of Chicago (2026) · error detection with post-selection; read v1 against v3 to see how an advantage claim gets tested.</li>
+    <li><a href="https://www.ibm.com/quantum/blog/large-scale-ftqc" target="_blank" rel="noopener">IBM lays out clear path to fault-tolerant quantum computing</a> — IBM (2025) · Starling 2029 and the qLDPC bicycle-code bet. Company roadmap.</li>
+    <li><a href="https://www.darpa.mil/news/2026/four-more-teams-enter-quantum-benchmarking-initiative-final-stage" target="_blank" rel="noopener">Four more teams enter Quantum Benchmarking Initiative’s final stage</a> — DARPA (2026) · the 2033 utility-scale question and who is being tested against it.</li>
+    <li><a href="https://csrc.nist.gov/projects/post-quantum-cryptography" target="_blank" rel="noopener">Post-Quantum Cryptography project</a> — NIST (2024–2026) · FIPS 203/204/205 and the status of FN-DSA and HQC.</li>
+    <li><a href="https://csrc.nist.gov/pubs/ir/8547/final" target="_blank" rel="noopener">NIST IR 8547: Transition to Post-Quantum Cryptography Standards</a> — NIST (2026) · the deprecation (2030) and disallowance (2035) dates you plan against.</li>
+    <li><a href="https://arxiv.org/abs/2505.15917" target="_blank" rel="noopener">How to factor 2048 bit RSA integers with less than a million noisy qubits</a> — Gidney (2025) · the current best surface-code estimate for breaking RSA. Preprint.</li>
+    <li><a href="https://arxiv.org/abs/2602.11457" target="_blank" rel="noopener">The Pinnacle Architecture</a> — Iceberg Quantum (2026) · under 100k physical qubits with qLDPC codes, if non-local connectivity can be built. Preprint.</li>
+    <li><a href="https://arxiv.org/abs/2011.04149" target="_blank" rel="noopener">Focus beyond quadratic speedups for error-corrected quantum advantage</a> — Babbush et al. (2021) · why Grover-type gains don't pay for error-correction overhead.</li>
+    <li><a href="https://www.nature.com/articles/nphys3272" target="_blank" rel="noopener">Read the fine print</a> — Aaronson (2015) · the caveats on quantum linear-algebra and ML speedups.</li>
+    <li><a href="https://arxiv.org/abs/1801.00862" target="_blank" rel="noopener">Quantum Computing in the NISQ era and beyond</a> — Preskill (2018) · the framing the whole field still argues within.</li>
+  </ul>
+
+  <h2 id="exercises">Check yourself</h2>
+  <ol class="exercises">
+    <li><b>Mosca for your own systems</b> — Pick three datasets you're responsible for and estimate each one's secrecy lifetime x and your migration time y. Using NIST's 2035 disallowance as a conservative stand-in for z, which datasets are already exposed to harvest-now attacks? A good answer ranks them and names the key-exchange path (TLS, SSH, VPN, storage envelope keys) that has to move first.</li>
+    <li><b>A 40-line statevector simulator</b><span class="code">code</span> — In numpy, represent n qubits as a complex vector of length 2ⁿ. Write <span class="mono">apply_1q(state, U, k)</span> (reshape to <span class="mono">[2]*n</span>, <span class="mono">tensordot</span> on axis k, move the axis back) and <span class="mono">apply_cnot(state, c, t)</span>, plus a sampler using <span class="mono">np.random.choice</span> with <span class="mono">p = |a|²</span>. Check that H then H on |0⟩ returns |0⟩, that a Bell state gives only 00 and 11, and that Bernstein–Vazirani on 5 qubits recovers a hidden string in one query. Then time it at n = 20, 24 and 26 and explain the curve.</li>
+    <li><b>Triage a headline</b> — A press release says "we demonstrated 100 logical qubits with 99.99% fidelity". Write the six questions you'd ask before believing it means progress toward fault tolerance. A good answer covers: code distance, detection versus correction, the post-selection discard rate, memory versus gates (and whether non-Clifford gates were included), the review status, and whether anyone tried a classical simulation.</li>
+    <li><b>Starling versus RSA</b> — Open the page 06 calculator and run the RSA-2048-class preset, then the Starling preset. Roughly how many Starling-class machines' worth of logical qubits does the plain surface-code RSA run need? Then explain why Gidney's under-1M estimate and the qLDPC-based Pinnacle estimate are both lower than the calculator's figure. What techniques does the simple model leave out?</li>
+  </ol>
+
+  <div class="callout">You've reached the end. Back to the <a class="lnk" href="../index.html#now">map</a>, or start again at <a class="lnk" href="p01.html">01 Fundamentals of Classical Computation</a>.</div>
+</main>
+<footer>Quantum Computing, Mapped · original explanation, written November 2026. Current-state claims link to their sources; company claims are marked as such.</footer>
+</body>
+</html>

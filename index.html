@@ -56,8 +56,8 @@
   .arc-head h2{margin:0;font-size:26px}
   .arc-sub{color:var(--ink-dim);margin:0 0 18px;max-width:680px}
   .group{margin:26px 0 0;scroll-margin-top:64px}
-  .group h3{font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--off-bright);margin:0 0 4px}
-  .group.cyan h3{color:var(--def)}
+  main section .group h3{font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--off-bright);margin:0 0 4px}
+  main section .group.cyan h3{color:var(--def)}
   .row{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:12px 0;border-top:1px solid var(--line-soft);align-items:start}
   .row .num{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-dim);padding-top:3px}
   .row .name{font-weight:600;font-size:16.5px;line-height:1.3}
@@ -72,6 +72,8 @@
   .links a:hover{border-color:var(--def)}
   .links a b{display:block;font-size:15px;margin-bottom:3px}
   .links a span{font-size:13px;color:var(--ink-dim)}
+  main .row .name a,main .links a{text-decoration:none}
+  main .links a span{color:var(--ink-dim)}
   .progress{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);margin-top:8px}
 </style>
 </head>
@@ -140,7 +142,7 @@
     <h2>Superposition: one number per possible answer</h2>
     <p class="plain">With several qubits, the machine keeps one number for every possible answer, and unlike probabilities, those numbers can be negative.</p>
     <figure class="dia">
-      <svg viewBox="0 0 360 316" role="img" aria-label="Three qubits have eight possible answers, 000 to 111. Top: each answer has an amplitude; here four are plus or minus one half and four are zero. Bottom: squaring each amplitude gives the chance of reading that answer, 25 percent for each of the four, whether the amplitude was positive or negative.">
+      <svg viewBox="0 0 360 316" role="img" aria-label="Three qubits have eight possible answers, 000 to 111. Top: each answer has an amplitude; here four are plus or minus 0.5 and four are zero. Bottom: squaring each amplitude gives the chance of reading that answer, 25 percent for each of the four, whether the amplitude was positive or negative.">
         <text class="h" x="10" y="16">Amplitude <tspan class="s" style="font-weight:400">(can be negative)</tspan></text>
         <g transform="translate(0,16)">
         <line x1="22" y1="80" x2="350" y2="80" class="ln"/>
@@ -148,10 +150,10 @@
         <rect x="77" y="80" width="26" height="50" fill="#F5A524"/>
         <rect x="157" y="30" width="26" height="50" fill="#35CFE0"/>
         <rect x="277" y="80" width="26" height="50" fill="#F5A524"/>
-        <text class="m c" x="50" y="26" text-anchor="middle" style="fill:#35CFE0">+½</text>
-        <text class="m a" x="90" y="146" text-anchor="middle">−½</text>
-        <text class="m c" x="170" y="26" text-anchor="middle" style="fill:#35CFE0">+½</text>
-        <text class="m a" x="290" y="146" text-anchor="middle">−½</text>
+        <text class="m c" x="50" y="25" text-anchor="middle" style="fill:#35CFE0">+0.5</text>
+        <text class="m a" x="90" y="146" text-anchor="middle">−0.5</text>
+        <text class="m c" x="170" y="25" text-anchor="middle" style="fill:#35CFE0">+0.5</text>
+        <text class="m a" x="290" y="146" text-anchor="middle">−0.5</text>
         <text class="s" x="180" y="172" text-anchor="middle">square each one ↓ = the chance of reading that answer</text>
         <line x1="22" y1="252" x2="350" y2="252" class="ln"/>
         <rect x="37" y="196" width="26" height="56" fill="#E7EBF1"/>
@@ -180,7 +182,7 @@
     <h2>Interference: how the right answer wins</h2>
     <p class="plain">Because amplitudes have signs, two routes to the same answer can add up or cancel out, and every quantum algorithm is a way of arranging that so wrong answers cancel and the right one is left.</p>
     <figure class="dia">
-      <svg viewBox="0 0 360 420" role="img" aria-label="Top: two waves with the same sign add into a bigger wave; two waves with opposite signs cancel to a flat line. Bottom: a photon meets a splitter, takes two routes, and the routes meet at a second splitter. At detector A both routes arrive with plus one half, which sums to one, so every photon lands there. At detector B one route brings plus one half and the other minus one half, which sums to zero, so no photon ever lands there.">
+      <svg viewBox="0 0 360 420" role="img" aria-label="Top: two waves with the same sign add into a bigger wave; two waves with opposite signs cancel to a flat line. Bottom: a photon meets a splitter, takes two routes, and the routes meet at a second splitter. At detector A both routes arrive with plus 0.5, which sums to one, so every photon lands there. At detector B one route brings plus 0.5 and the other minus 0.5, which sums to zero, so no photon ever lands there.">
         <defs><marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#AEB6C2"/></marker></defs>
         <text class="h" x="90" y="22" text-anchor="middle">Same sign: add up</text>
         <text class="h" x="270" y="22" text-anchor="middle">Opposite sign: cancel</text>
@@ -212,11 +214,11 @@
         <line x1="280" y1="296" x2="318" y2="322" class="ln" marker-end="url(#ah3)"/>
         <rect x="322" y="256" width="26" height="26" rx="4" fill="#35CFE0"/><text class="h" x="335" y="274" text-anchor="middle" style="fill:#0A0C0F">A</text>
         <rect x="322" y="310" width="26" height="26" rx="4" class="ln"/><text class="h" x="335" y="328" text-anchor="middle">B</text>
-        <text class="m" x="10" y="378"><tspan style="fill:#35CFE0">A:</tspan> +½ + ½ = 1 → every photon</text>
-        <text class="m" x="10" y="396"><tspan style="fill:#F5A524">B:</tspan> +½ − ½ = 0 → never</text>
+        <text class="m" x="10" y="378"><tspan style="fill:#35CFE0">A:</tspan> +0.5 + 0.5 = 1 → every photon</text>
+        <text class="m" x="10" y="396"><tspan style="fill:#F5A524">B:</tspan> +0.5 − 0.5 = 0 → never</text>
         </g>
       </svg>
-      <figcaption>A real experiment (a Mach–Zehnder interferometer). Each route to a detector carries amplitude ½; one route into B picks up a minus sign. If the splitters were fair coins, B would catch half the photons. With amplitudes it catches none.</figcaption>
+      <figcaption>A real experiment (a Mach–Zehnder interferometer). Each route to a detector carries amplitude 0.5; one route into B picks up a minus sign. If the splitters were fair coins, B would catch half the photons. With amplitudes it catches none.</figcaption>
     </figure>
     <p>Block one route and B starts catching photons again: removing a way to get there makes the outcome more likely. Amplitudes add before they are squared into odds.</p>
     <p>A quantum algorithm runs the same trick across many qubits: it steers the amplitudes so paths to wrong answers cancel and paths to the right answer reinforce, then reads once.</p>
@@ -293,7 +295,7 @@
       </svg>
       <figcaption>Top: 3, 9, 27, 81… keeping only the remainder after dividing by 13. Factoring turns into finding how often a pattern like this repeats. Bottom: the scorecard from part 5.</figcaption>
     </figure>
-    <p>For factoring, the best known classical method slows down far faster than <dfn>Shor's algorithm</dfn> as numbers grow, so the gap widens without limit. For unstructured search, <dfn>Grover's algorithm</dfn> <span class="gl">(searching a list with no order to exploit)</span> needs only the square root of the checks, but each quantum step is so much slower than a CPU's that breaking even takes months.</p>
+    <p>For factoring, the best known classical method slows down far faster than <dfn>Shor's algorithm</dfn> as numbers grow, so the gap widens without limit. For unstructured search, <dfn>Grover's algorithm</dfn> <span class="gl">(searching a list with no order to exploit)</span> needs only the square root of the checks, but each quantum step is so much slower than a CPU's that breaking even takes months on plausible assumptions.</p>
     <p>The hardest scheduling and routing puzzles (the <dfn>NP-complete</dfn> ones) are not believed to fall at all, and no optimisation or machine-learning workload has a demonstrated quantum advantage today.</p>
     <div class="oneline"><span class="lbl">In one line</span><p>Big wins need hidden structure: code-breaking and chemistry yes, generic search barely, generic optimisation not shown.</p></div>
     <p class="deeper">Go deeper: <a class="lnk" href="parts/p02.html">P2 · Why quantum?</a> · <a class="lnk" href="parts/p05.html">P5 · the scorecard</a></p>
@@ -382,7 +384,7 @@
   <section class="idea" id="status">
     <div class="kicker">Idea 7 of 8</div>
     <h2>Where the hardware stands, November 2026</h2>
-    <p class="plain">Error correction now demonstrably works in the lab, on machines hundreds to thousands of times smaller than the jobs that would matter.</p>
+    <p class="plain">Error correction now demonstrably works in the lab, on machines roughly 50 to 10,000 times smaller than the jobs that would matter.</p>
     <figure class="dia">
       <svg viewBox="0 0 360 440" role="img" aria-label="A ladder of physical qubit counts on a scale where each step is ten times more. Built so far: about 100 qubits in the best error-correction demonstrations from Google and Quantinuum, 448 atoms at Harvard, MIT and QuEra, and 2,034 qubits on IBM's newest chip without error correction. Needed: under 100,000 for RSA-2048 if long-range wiring works, under a million for RSA-2048 in about a week, about 4 million for a key chemistry problem, and 20 million by the 2019 RSA estimate.">
         <line x1="62" y1="40" x2="62" y2="412" class="ln"/>
@@ -405,10 +407,10 @@
         <circle cx="62" cy="150" r="6" fill="#F5A524"/><text class="a" x="78" y="155">RSA-2048 in a week: under 1M</text><text class="s" x="78" y="170">Gidney 2025 · preprint</text>
         <circle cx="62" cy="202" r="6" fill="#F5A524"/><text class="a" x="78" y="200">RSA-2048 with long-range wiring: &lt;100k</text><text class="s" x="78" y="215">2026 · preprint</text>
         <!-- built (cyan) -->
-        <circle cx="62" cy="290" r="6" fill="#35CFE0"/><text class="c" x="78" y="300">IBM chip: 2,034 (520 usable), no correction</text><text class="s" x="78" y="315">Nov 2026 · company claim</text>
-        <circle cx="62" cy="324" r="6" fill="#35CFE0"/><text class="c" x="78" y="337">Harvard/MIT/QuEra: 448 atoms</text><text class="s" x="78" y="352">full error-correction toolkit · peer reviewed</text>
-        <circle cx="62" cy="358" r="6" fill="#35CFE0"/><text class="c" x="78" y="374">Google Willow 105, Quantinuum Helios 98</text><text class="s" x="78" y="389">best error-correction results · peer reviewed</text>
-        <text class="s" x="78" y="430"><tspan style="fill:#35CFE0">●</tspan> built so far   <tspan style="fill:#F5A524">●</tspan> needed for useful jobs</text>
+        <circle cx="62" cy="290" r="6" fill="#35CFE0"/><text class="c" x="78" y="294">IBM chip: 2,034 (520 usable), no correction</text><text class="s" x="78" y="309">Nov 2026 · company claim</text>
+        <circle cx="62" cy="324" r="6" fill="#35CFE0"/><text class="c" x="78" y="328">Harvard/MIT/QuEra: 448 atoms</text><text class="s" x="78" y="343">full error-correction toolkit · peer reviewed</text>
+        <circle cx="62" cy="358" r="6" fill="#35CFE0"/><text class="c" x="78" y="362">Google Willow 105, Quantinuum Helios 98</text><text class="s" x="78" y="377">best error correction: Willow peer reviewed,</text><text class="s" x="78" y="392">Helios result a company report</text>
+        <text class="s" x="78" y="432"><tspan style="fill:#35CFE0">●</tspan> built so far   <tspan style="fill:#F5A524">●</tspan> needed for useful jobs</text>
       </svg>
       <figcaption>Each step up is ten times more physical qubits. "Needed" figures are published estimates assuming qubits that slip 1 time in 1,000; they keep falling as algorithms improve.</figcaption>
     </figure>
@@ -455,7 +457,7 @@
 
   <section id="parts">
     <div class="arc-head"><span class="idx">THE NINE PAGES</span><h2>Go deeper</h2></div>
-    <p class="arc-sub">Each page takes one or two of the ideas above all the way down, with the math. Tick a page when you have worked through it.</p>
+    <p class="arc-sub">Each page takes one or two of the ideas above all the way down, with the math.</p>
     <p class="progress" id="progress">Tick a page when you have worked through it; this browser remembers.</p>
     <div class="group" id="why">
       <h3>Why quantum · parts 1–3</h3>

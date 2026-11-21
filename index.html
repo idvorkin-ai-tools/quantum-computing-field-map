@@ -4,54 +4,77 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Quantum Computing, Mapped — how it works, what it's for, where it stands</title>
-<meta name="description" content="A nine-part field map of quantum computing for engineers: the math of qubits and gates, what it can and cannot do, error correction, who is building it, and the state of play in November 2026." />
+<meta name="description" content="Quantum computing in eight ideas, each with one diagram, for people who write software rather than physics: qubits, amplitudes, interference, entanglement, what it speeds up, error correction, where the hardware stands, and what to do now." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,500;1,400;1,500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="paper.css" />
 <style>
-  main{max-width:960px}
+  main{max-width:840px}
   .hero{padding:24px 0 8px}
   .hero h1{font-size:clamp(32px,5.5vw,52px);line-height:1.05;margin:10px 0 14px;letter-spacing:-.01em}
-  .hero .sub{font-size:18px;color:var(--ink-dim);max-width:720px;line-height:1.55}
-  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:26px 0 8px}
-  .fact{border:1px solid var(--line-soft);border-radius:8px;padding:12px 14px}
-  .fact .k{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
-  .fact .v{font-size:17px;font-weight:600;margin-top:4px;line-height:1.35}
-  .fact .s{font-size:13px;color:var(--ink-dim);margin-top:6px;line-height:1.5}
+  .hero .sub{font-size:18px;color:var(--ink-mid);max-width:640px;line-height:1.55}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px;padding:0;list-style:none}
+  .toc li{padding:0;max-width:none}
+  .toc li::before{content:none}
+  main .toc a{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-mid);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+  main .toc a:hover{border-color:var(--def);color:var(--ink)}
+  .toc a b{color:var(--off-bright);font-weight:600;margin-right:4px}
+
   section{padding:56px 0;border-bottom:1px solid var(--line-soft);scroll-margin-top:64px}
   section:last-of-type{border-bottom:none}
+
+  /* one idea = kicker, heading, plain sentence, diagram, short text, one-line takeaway, links */
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--off-bright);margin:0 0 8px}
+  .idea h2{font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:clamp(26px,4.2vw,34px);line-height:1.15;margin:0 0 14px;letter-spacing:-.015em}
+  .plain{font-family:'IBM Plex Serif',Georgia,serif;font-weight:500;font-size:clamp(18px,2.6vw,21px);line-height:1.5;color:var(--ink);max-width:36em;margin:0 0 22px}
+  .idea p{max-width:64ch}
+  dfn{font-style:normal;font-weight:600;color:var(--ink);border-bottom:1px dotted var(--def)}
+  .gl{color:var(--ink-dim)}
+  figure.dia{margin:6px 0 24px;padding:18px 14px 12px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+  figure.dia svg{display:block;width:100%;max-width:480px;height:auto;margin:0 auto}
+  figure.dia figcaption{font-size:13.5px;color:var(--ink-dim);line-height:1.5;margin:12px auto 0;max-width:600px}
+  @media (max-width:560px){figure.dia{margin-left:-12px;margin-right:-12px;padding:14px 5px 10px}figure.dia figcaption{padding:0 8px}}
+  .dia text{fill:var(--ink-mid);font-family:'IBM Plex Sans',sans-serif;font-size:13px}
+  .dia text.h{fill:var(--ink);font-weight:600;font-size:14px}
+  .dia text.m{font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+  .dia text.s{fill:var(--ink-dim);font-size:12px}
+  .dia text.c{fill:var(--def)} .dia text.a{fill:var(--off-bright)}
+  .dia .ln{stroke:var(--ink-dim);fill:none;stroke-width:1.5}
+  .dia .ink{stroke:var(--ink);fill:none;stroke-width:2}
+  .dia .cy{stroke:var(--def);fill:none;stroke-width:2.5}
+  .dia .am{stroke:var(--off);fill:none;stroke-width:2.5}
+  .dia .grid{stroke:var(--line);fill:none;stroke-width:1}
+  .oneline{border-left:3px solid var(--off);background:rgba(245,165,36,.06);border-radius:0 10px 10px 0;padding:14px 18px;margin:22px 0 18px;max-width:64ch}
+  .oneline .lbl{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--off-bright);margin-bottom:4px}
+  .oneline p{font-family:'IBM Plex Serif',Georgia,serif;font-style:italic;font-size:18.5px;line-height:1.45;color:var(--ink);margin:0;max-width:none}
+  .deeper{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-dim);margin:0}
+
+  /* directory of the nine pages */
   .arc-head{display:flex;align-items:baseline;gap:14px;margin:0 0 6px;flex-wrap:wrap}
   .arc-head .idx{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;color:var(--ink-dim)}
   .arc-head h2{margin:0;font-size:26px}
-  .arc-sub{color:var(--ink-dim);margin:0 0 22px;max-width:680px}
-  .row{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 0;border-top:1px solid var(--line-soft);align-items:start}
-  .row:first-of-type{border-top:none}
+  .arc-sub{color:var(--ink-dim);margin:0 0 18px;max-width:680px}
+  .group{margin:26px 0 0;scroll-margin-top:64px}
+  main section .group h3{font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--off-bright);margin:0 0 4px}
+  main section .group.cyan h3{color:var(--def)}
+  .row{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:12px 0;border-top:1px solid var(--line-soft);align-items:start}
   .row .num{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-dim);padding-top:3px}
-  .row .name{font-weight:600;font-size:17px;line-height:1.3}
+  .row .name{font-weight:600;font-size:16.5px;line-height:1.3}
   .row .name a{color:var(--ink)}
-  .row .meta{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-dim);margin:4px 0 6px;display:flex;flex-wrap:wrap;gap:10px}
-  .row .desc{color:var(--ink-dim);font-size:14.5px;line-height:1.55}
-  .amber .row .name a:hover{color:var(--off)} .cyan .row .name a:hover{color:var(--def)}
+  .row .desc{color:var(--ink-dim);font-size:14.5px;line-height:1.55;margin-top:3px}
+  .group .row .name a:hover{color:var(--off)} .group.cyan .row .name a:hover{color:var(--def)}
   .check{width:16px;height:16px;border:1px solid var(--ink-dim);border-radius:4px;display:inline-block;vertical-align:-3px;margin-right:6px;cursor:pointer;background:transparent}
   .check.on{background:var(--off);border-color:var(--off)}
   .cyan .check.on{background:var(--def);border-color:var(--def)}
-  .spine{list-style:none;padding:0;margin:0 0 8px;display:grid;gap:0}
-  .spine li{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:14px 0;border-top:1px solid var(--line-soft);align-items:baseline;max-width:none}
-  .spine li::before{content:none}
-  .spine li:first-child{border-top:none}
-  .spine .step{font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--off-bright)}
-  .spine .step.b{color:var(--def)}
-  .spine .say{font-size:15.5px;line-height:1.6}
-  .spine .say b{color:var(--ink)}
-  @media (max-width:560px){.spine li{grid-template-columns:1fr;gap:4px}}
   .links{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
   .links a{display:block;border:1px solid var(--line-soft);border-radius:8px;padding:12px 14px;color:var(--ink);text-decoration:none}
   .links a:hover{border-color:var(--def)}
   .links a b{display:block;font-size:15px;margin-bottom:3px}
   .links a span{font-size:13px;color:var(--ink-dim)}
+  main .row .name a,main .links a{text-decoration:none}
+  main .links a span{color:var(--ink-dim)}
   .progress{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);margin-top:8px}
-  .row li,.links li{max-width:none}
 </style>
 </head>
 <body>
@@ -61,57 +84,403 @@
 </div></header>
 <main>
   <div class="hero">
-    <div class="eyebrow"><span class="box wb mono">QUANTUM COMPUTING · NOV 2026</span><span class="mono">9 parts · 1 calculator · every claim sourced</span></div>
+    <div class="eyebrow"><span class="box wb mono">QUANTUM COMPUTING · NOV 2026</span><span class="mono">8 ideas · 9 deeper pages · claims sourced</span></div>
     <h1>Quantum computing, mapped</h1>
-    <p class="sub">For engineers who want the real thing without a physics degree: the linear algebra of qubits and gates, what a quantum computer can and cannot speed up, why error correction is the whole game, who is building the machines, and what actually happened in 2024–2026 once you read past the press releases. Current-state claims link to their sources, and company announcements that are not peer reviewed are marked as such.</p>
-    <div class="facts">
-      <div class="fact"><div class="k">Error correction works</div><div class="v">Logical errors now fall as codes grow</div><div class="s">Google's Willow showed it for the surface code in Dec 2024 (<a class="lnk" href="https://www.nature.com/articles/s41586-024-08449-y" target="_blank" rel="noopener">Nature</a>); Quantinuum reports ~5×10⁻⁶ per round at distance 7 on Helios, Oct 2026 (<a class="lnk" href="https://www.quantinuum.com/fault-tolerance-by-2029" target="_blank" rel="noopener">company report</a>).</div></div>
-      <div class="fact"><div class="k">Still small</div><div class="v">Tens of logical qubits, not thousands</div><div class="s">The biggest 2026 "logical" demos are error <i>detection</i> with post-selection (<a class="lnk" href="parts/p08.html#logical-table">table</a>). IBM targets 200 logical qubits by 2029 (Starling); useful chemistry and RSA need far more.</div></div>
-      <div class="fact"><div class="k">Crypto clock</div><div class="v">RSA and ECC: deprecated after 2030, disallowed after 2035</div><div class="s">NIST IR 8547, final 27 Oct 2026 (<a class="lnk" href="https://csrc.nist.gov/pubs/ir/8547/final" target="_blank" rel="noopener">NIST</a>). Migrate to ML-KEM and ML-DSA now.</div></div>
-      <div class="fact"><div class="k">Try it</div><div class="v"><a class="lnk" href="parts/p06.html#qec-calc">How many physical qubits per logical qubit?</a></div><div class="s">Drag the error rate and watch the overhead.</div></div>
-    </div>
-    <p class="progress" id="progress">Tick a page when you have worked through it; this browser remembers.</p>
+    <p class="sub">For people who write software, not physics. Eight ideas, one picture each, from what a qubit is to where the field stands in November 2026. Claims about the field link to sources; company claims not yet peer reviewed are marked.</p>
+    <ul class="toc">
+      <li><a href="#qubit"><b>1</b>Qubits</a></li>
+      <li><a href="#amplitudes"><b>2</b>Superposition</a></li>
+      <li><a href="#interference"><b>3</b>Interference</a></li>
+      <li><a href="#entanglement"><b>4</b>Entanglement</a></li>
+      <li><a href="#structure"><b>5</b>What it speeds up</a></li>
+      <li><a href="#errors"><b>6</b>Errors</a></li>
+      <li><a href="#status"><b>7</b>Where it stands</a></li>
+      <li><a href="#act"><b>8</b>What to do</a></li>
+    </ul>
   </div>
 
-  <section id="spine">
-    <div class="arc-head"><span class="idx">00</span><h2>The spine</h2></div>
-    <p class="arc-sub">Six ideas carry the whole subject. Read this list first; every page below unpacks one or two of them.</p>
-    <ul class="spine">
-      <li><span class="step">1 · Amplitudes</span><span class="say"><b>A classical probabilistic computer tracks 2ⁿ non-negative probabilities; a quantum computer tracks 2ⁿ complex amplitudes.</b> Gates are unitary matrices instead of stochastic ones, and probabilities are squared magnitudes <span class="mono">|a_x|²</span>. That one change is the entire difference. <a class="lnk" href="parts/p01.html">P1</a> · <a class="lnk" href="parts/p04.html">P4</a></span></li>
-      <li><span class="step">2 · Interference</span><span class="say"><b>Amplitudes can be negative, so paths can cancel.</b> A quantum algorithm is a choreography that makes wrong answers cancel and right ones add up before you measure. Superposition alone buys nothing, because measurement hands you one sample. <a class="lnk" href="parts/p03.html">P3</a> · <a class="lnk" href="parts/p04.html">P4</a></span></li>
-      <li><span class="step">3 · Structure</span><span class="say"><b>Big speedups need problem structure.</b> Period finding (Shor) and simulating quantum physics get exponential gains; unstructured search (Grover) gets only <span class="mono">√N</span>; NP-complete problems are not believed to fall at all. <a class="lnk" href="parts/p02.html">P2</a> · <a class="lnk" href="parts/p05.html">P5</a></span></li>
-      <li><span class="step b">4 · Errors</span><span class="say"><b>Physical qubits fail about once per thousand operations; useful algorithms need about one failure per trillion.</b> Error correction closes that gap by spending hundreds to thousands of physical qubits per logical qubit, and only works below a threshold error rate. <a class="lnk" href="parts/p06.html">P6</a></span></li>
-      <li><span class="step b">5 · Where it stands</span><span class="say"><b>2024–2026 proved error correction scales in principle, on tens of logical qubits.</b> The headline numbers mean different things (detection vs correction, memory vs gates, distance 2 vs 7), and several are company claims not yet peer reviewed. <a class="lnk" href="parts/p07.html">P7</a> · <a class="lnk" href="parts/p08.html">P8</a></span></li>
-      <li><span class="step b">6 · What to do</span><span class="say"><b>For most engineers, the actionable part is post-quantum cryptography, now.</b> Chemistry and materials are the real long-term prize; claims about optimisation and machine learning deserve scepticism. <a class="lnk" href="parts/p09.html">P9</a></span></li>
-    </ul>
+  <!-- 1 · QUBIT -->
+  <section class="idea" id="qubit">
+    <div class="kicker">Idea 1 of 8</div>
+    <h2>Bits and qubits</h2>
+    <p class="plain">A qubit is the quantum version of a bit: when you read it you still get a 0 or a 1, but before you read it, it holds a direction rather than a value, and that direction sets the odds.</p>
+    <figure class="dia">
+      <svg viewBox="0 0 360 370" role="img" aria-label="A bit is either 0 or 1. A qubit is an arrow on a sphere: straight up is 0, straight down is 1, on the equator is a 50/50 chance. The arrow drawn is tilted 60 degrees from the top, so reading it gives 0 three times in four.">
+        <defs><marker id="ah1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#35CFE0"/></marker></defs>
+        <text class="h" x="20" y="30">A bit</text>
+        <circle cx="130" cy="25" r="13" fill="#E7EBF1"/><text class="m" x="130" y="30" text-anchor="middle" style="fill:#0A0C0F">0</text>
+        <circle cx="175" cy="25" r="13" class="ln"/><text class="m" x="175" y="30" text-anchor="middle">1</text>
+        <text class="s" x="200" y="30">always exactly one</text>
+        <line x1="20" y1="56" x2="340" y2="56" class="grid"/>
+        <text class="h" x="20" y="84">A qubit</text>
+        <circle cx="180" cy="210" r="90" class="ln"/>
+        <ellipse cx="180" cy="210" rx="90" ry="24" class="ln" stroke-dasharray="4 4"/>
+        <line x1="180" y1="210" x2="180" y2="120" class="ln" stroke-dasharray="3 4"/>
+        <circle cx="180" cy="120" r="4" fill="#E7EBF1"/><circle cx="180" cy="300" r="4" fill="#E7EBF1"/>
+        <text class="m" x="180" y="108" text-anchor="middle" style="fill:#E7EBF1">0 = arrow straight up</text>
+        <text class="m" x="180" y="322" text-anchor="middle" style="fill:#E7EBF1">1 = straight down</text>
+        <text class="s" x="84" y="206" text-anchor="end">equator:</text>
+        <text class="s" x="84" y="222" text-anchor="end">50 / 50</text>
+        <path d="M180 170 A40 40 0 0 1 214.6 190" class="ln"/>
+        <text class="s" x="199" y="164">tilt</text>
+        <line x1="180" y1="210" x2="256" y2="166" stroke="#35CFE0" stroke-width="3" marker-end="url(#ah1)"/>
+        <circle cx="180" cy="210" r="3" fill="#35CFE0"/>
+        <text class="c" x="266" y="158">the qubit:</text>
+        <text class="c" x="266" y="174">an arrow</text>
+        <text x="180" y="352" text-anchor="middle">At this tilt, reading gives <tspan style="fill:#E7EBF1;font-weight:600">0 three times in four</tspan></text>
+      </svg>
+      <figcaption>The arrow is 60° from the top, so a 0 comes up 75% of the time. Swinging it around the equator leaves those odds alone.</figcaption>
+    </figure>
+    <p>Reading a qubit, called <dfn>measuring</dfn> it, gives one bit and destroys the arrow: afterwards the qubit really is the 0 or 1 you saw. So "0 and 1 at the same time" is misleading; the qubit does not secretly hold both answers for you to look up. The angle around the equator, the <dfn>phase</dfn>, is invisible to a direct read, yet it is what lets qubit states cancel each other later.</p>
+    <div class="oneline"><span class="lbl">In one line</span><p>A qubit is an arrow, not a hidden 0&#8209;or&#8209;1. Reading it gives you one bit, with odds set by where the arrow points.</p></div>
+    <p class="deeper">Go deeper: <a class="lnk" href="parts/p03.html">P3 · Enter the quantum world</a></p>
   </section>
 
-  <section id="why" class="amber">
-    <div class="arc-head"><span class="idx">01 · PARTS 1–3</span><h2>Why quantum</h2></div>
-    <p class="arc-sub">Start from the computer you know, find exactly where it runs out of road, then meet the physics that offers a different model of computation.</p>
-    <div class="row"><div class="num"><span class="check" data-p="p01"></span>01</div><div><div class="name"><a href="parts/p01.html">Fundamentals of Classical Computation</a></div><div class="meta"><span>bits · gates · reversibility · probability vectors · P, BPP, NP</span></div><div class="desc">Circuits, universal gates and the probabilistic computer written as a 2ⁿ-entry probability vector pushed through stochastic matrices: the exact setup that quantum computing changes one rule of.</div></div></div>
-    <div class="row"><div class="num"><span class="check" data-p="p02"></span>02</div><div><div class="name"><a href="parts/p02.html">Why Quantum?</a></div><div class="meta"><span>Feynman's argument · exponential state space · BQP vs NP · kinds of speedup</span></div><div class="desc">Simulating nature is exponentially expensive on a classical machine, so build a machine out of nature. What that buys, and the problems it is not believed to help with.</div></div></div>
-    <div class="row"><div class="num"><span class="check" data-p="p03"></span>03</div><div><div class="name"><a href="parts/p03.html">Enter the Quantum World</a></div><div class="meta"><span>amplitudes · interference · measurement · entanglement · no-cloning · qubit hardware</span></div><div class="desc">The physics an engineer actually needs, as calculations rather than metaphors, plus a one-line tour of each way people build a qubit.</div></div></div>
+  <!-- 2 · AMPLITUDES -->
+  <section class="idea" id="amplitudes">
+    <div class="kicker">Idea 2 of 8</div>
+    <h2>Superposition: one number per possible answer</h2>
+    <p class="plain">With several qubits, the machine keeps one number for every possible answer, and unlike probabilities, those numbers can be negative.</p>
+    <figure class="dia">
+      <svg viewBox="0 0 360 316" role="img" aria-label="Three qubits have eight possible answers, 000 to 111. Top: each answer has an amplitude; here four are plus or minus 0.5 and four are zero. Bottom: squaring each amplitude gives the chance of reading that answer, 25 percent for each of the four, whether the amplitude was positive or negative.">
+        <text class="h" x="10" y="16">Amplitude <tspan class="s" style="font-weight:400">(can be negative)</tspan></text>
+        <g transform="translate(0,16)">
+        <line x1="22" y1="80" x2="350" y2="80" class="ln"/>
+        <rect x="37" y="30" width="26" height="50" fill="#35CFE0"/>
+        <rect x="77" y="80" width="26" height="50" fill="#F5A524"/>
+        <rect x="157" y="30" width="26" height="50" fill="#35CFE0"/>
+        <rect x="277" y="80" width="26" height="50" fill="#F5A524"/>
+        <text class="m c" x="50" y="25" text-anchor="middle" style="fill:#35CFE0">+0.5</text>
+        <text class="m a" x="90" y="146" text-anchor="middle">−0.5</text>
+        <text class="m c" x="170" y="25" text-anchor="middle" style="fill:#35CFE0">+0.5</text>
+        <text class="m a" x="290" y="146" text-anchor="middle">−0.5</text>
+        <text class="s" x="180" y="172" text-anchor="middle">square each one ↓ = the chance of reading that answer</text>
+        <line x1="22" y1="252" x2="350" y2="252" class="ln"/>
+        <rect x="37" y="196" width="26" height="56" fill="#E7EBF1"/>
+        <rect x="77" y="196" width="26" height="56" fill="#E7EBF1"/>
+        <rect x="157" y="196" width="26" height="56" fill="#E7EBF1"/>
+        <rect x="277" y="196" width="26" height="56" fill="#E7EBF1"/>
+        <text class="m" x="50" y="190" text-anchor="middle">25%</text>
+        <text class="m" x="90" y="190" text-anchor="middle">25%</text>
+        <text class="m" x="170" y="190" text-anchor="middle">25%</text>
+        <text class="m" x="290" y="190" text-anchor="middle">25%</text>
+        <g class="m"><text class="m" x="50" y="272" text-anchor="middle">000</text><text class="m" x="90" y="272" text-anchor="middle">001</text><text class="m" x="130" y="272" text-anchor="middle">010</text><text class="m" x="170" y="272" text-anchor="middle">011</text><text class="m" x="210" y="272" text-anchor="middle">100</text><text class="m" x="250" y="272" text-anchor="middle">101</text><text class="m" x="290" y="272" text-anchor="middle">110</text><text class="m" x="330" y="272" text-anchor="middle">111</text></g>
+        <text class="s" x="180" y="294" text-anchor="middle">the 8 possible answers of 3 qubits</text>
+        </g>
+      </svg>
+      <figcaption>A minus sign gives the same odds as a plus sign. The sign only matters when amplitudes combine, which is idea 3.</figcaption>
+    </figure>
+    <p>These numbers are called <dfn>amplitudes</dfn>, and holding all of them at once is what <dfn>superposition</dfn> means. The count doubles with every qubit: 3 qubits have 8, and 50 qubits have about a million billion. That is the "exponential" in every quantum pitch.</p>
+    <p>That alone is not a speedup: reading the qubits returns one answer, picked with those odds, and the rest are gone. A randomised program also has a probability per outcome; the one change is that amplitudes carry a sign.</p>
+    <div class="oneline"><span class="lbl">In one line</span><p>Superposition is a list of signed numbers, one per possible answer, and you only ever get to read one answer.</p></div>
+    <p class="deeper">Go deeper: <a class="lnk" href="parts/p01.html">P1 · Classical computation</a> · <a class="lnk" href="parts/p04.html">P4 · Quantum computation</a></p>
   </section>
 
-  <section id="how" class="amber">
-    <div class="arc-head"><span class="idx">02 · PARTS 4–6</span><h2>How it works, and what it's for</h2></div>
-    <p class="arc-sub">The math of the model, the algorithms that justify it, and the engineering wall between the model and a useful machine.</p>
-    <div class="row"><div class="num"><span class="check" data-p="p04"></span>04</div><div><div class="name"><a href="parts/p04.html">Fundamentals of Quantum Computation</a></div><div class="meta"><span>state vectors · tensor products · unitary gates · Clifford+T · measurement</span></div><div class="desc">Qubits and gates as linear algebra, interference doing real work in a small algorithm, why Clifford circuits are easy to simulate and the T gate is the expensive ingredient, and why you cannot read out 2ⁿ amplitudes.</div></div></div>
-    <div class="row"><div class="num"><span class="check" data-p="p05"></span>05</div><div><div class="name"><a href="parts/p05.html">Capabilities of Quantum Computation</a></div><div class="meta"><span>Shor · Grover · chemistry and materials · optimisation and ML, honestly</span></div><div class="desc">What each algorithm buys and what it costs in qubits and hours, with a scorecard from strong (simulation, cryptanalysis) to unproven (optimisation, machine learning).</div></div></div>
-    <div class="row"><div class="num"><span class="check" data-p="p06"></span>06</div><div><div class="name"><a href="parts/p06.html">Challenges of Quantum Computation</a></div><div class="meta"><span>decoherence · threshold theorem · surface code · qLDPC · decoding · <b>calculator</b></span></div><div class="desc">Why errors are the whole problem, how the surface code turns many bad qubits into one good one, and an interactive that shows why a useful machine needs hundreds of thousands to millions of physical qubits.</div></div></div>
+  <!-- 3 · INTERFERENCE -->
+  <section class="idea" id="interference">
+    <div class="kicker">Idea 3 of 8</div>
+    <h2>Interference: how the right answer wins</h2>
+    <p class="plain">Because amplitudes have signs, two routes to the same answer can add up or cancel out, and every quantum algorithm is a way of arranging that so wrong answers cancel and the right one is left.</p>
+    <figure class="dia">
+      <svg viewBox="0 0 360 420" role="img" aria-label="Top: two waves with the same sign add into a bigger wave; two waves with opposite signs cancel to a flat line. Bottom: a photon meets a splitter, takes two routes, and the routes meet at a second splitter. At detector A both routes arrive with plus 0.5, which sums to one, so every photon lands there. At detector B one route brings plus 0.5 and the other minus 0.5, which sums to zero, so no photon ever lands there.">
+        <defs><marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#AEB6C2"/></marker></defs>
+        <text class="h" x="90" y="22" text-anchor="middle">Same sign: add up</text>
+        <text class="h" x="270" y="22" text-anchor="middle">Opposite sign: cancel</text>
+        <path d="M20.0 60.0 L22.0 57.9 L24.0 55.8 L26.0 53.8 L28.0 52.1 L30.0 50.6 L32.0 49.4 L34.0 48.6 L36.0 48.1 L38.0 48.0 L40.0 48.3 L42.0 49.0 L44.0 50.0 L46.0 51.3 L48.0 52.9 L50.0 54.8 L52.0 56.8 L54.0 58.9 L56.0 61.1 L58.0 63.2 L60.0 65.2 L62.0 67.1 L64.0 68.7 L66.0 70.0 L68.0 71.0 L70.0 71.7 L72.0 72.0 L74.0 71.9 L76.0 71.4 L78.0 70.6 L80.0 69.4 L82.0 67.9 L84.0 66.2 L86.0 64.2 L88.0 62.1 L90.0 60.0 L92.0 57.9 L94.0 55.8 L96.0 53.8 L98.0 52.1 L100.0 50.6 L102.0 49.4 L104.0 48.6 L106.0 48.1 L108.0 48.0 L110.0 48.3 L112.0 49.0 L114.0 50.0 L116.0 51.3 L118.0 52.9 L120.0 54.8 L122.0 56.8 L124.0 58.9 L126.0 61.1 L128.0 63.2 L130.0 65.2 L132.0 67.1 L134.0 68.7 L136.0 70.0 L138.0 71.0 L140.0 71.7 L142.0 72.0 L144.0 71.9 L146.0 71.4 L148.0 70.6 L150.0 69.4 L152.0 67.9 L154.0 66.2 L156.0 64.2 L158.0 62.1 L160.0 60.0" class="cy"/>
+        <path d="M20.0 100.0 L22.0 97.9 L24.0 95.8 L26.0 93.8 L28.0 92.1 L30.0 90.6 L32.0 89.4 L34.0 88.6 L36.0 88.1 L38.0 88.0 L40.0 88.3 L42.0 89.0 L44.0 90.0 L46.0 91.3 L48.0 92.9 L50.0 94.8 L52.0 96.8 L54.0 98.9 L56.0 101.1 L58.0 103.2 L60.0 105.2 L62.0 107.1 L64.0 108.7 L66.0 110.0 L68.0 111.0 L70.0 111.7 L72.0 112.0 L74.0 111.9 L76.0 111.4 L78.0 110.6 L80.0 109.4 L82.0 107.9 L84.0 106.2 L86.0 104.2 L88.0 102.1 L90.0 100.0 L92.0 97.9 L94.0 95.8 L96.0 93.8 L98.0 92.1 L100.0 90.6 L102.0 89.4 L104.0 88.6 L106.0 88.1 L108.0 88.0 L110.0 88.3 L112.0 89.0 L114.0 90.0 L116.0 91.3 L118.0 92.9 L120.0 94.8 L122.0 96.8 L124.0 98.9 L126.0 101.1 L128.0 103.2 L130.0 105.2 L132.0 107.1 L134.0 108.7 L136.0 110.0 L138.0 111.0 L140.0 111.7 L142.0 112.0 L144.0 111.9 L146.0 111.4 L148.0 110.6 L150.0 109.4 L152.0 107.9 L154.0 106.2 L156.0 104.2 L158.0 102.1 L160.0 100.0" class="cy"/>
+        <path d="M20.0 150.0 L22.0 145.7 L24.0 141.6 L26.0 137.7 L28.0 134.2 L30.0 131.2 L32.0 128.9 L34.0 127.2 L36.0 126.2 L38.0 126.0 L40.0 126.6 L42.0 127.9 L44.0 130.0 L46.0 132.7 L48.0 135.9 L50.0 139.6 L52.0 143.6 L54.0 147.8 L56.0 152.2 L58.0 156.4 L60.0 160.4 L62.0 164.1 L64.0 167.3 L66.0 170.0 L68.0 172.1 L70.0 173.4 L72.0 174.0 L74.0 173.8 L76.0 172.8 L78.0 171.1 L80.0 168.8 L82.0 165.8 L84.0 162.3 L86.0 158.4 L88.0 154.3 L90.0 150.0 L92.0 145.7 L94.0 141.6 L96.0 137.7 L98.0 134.2 L100.0 131.2 L102.0 128.9 L104.0 127.2 L106.0 126.2 L108.0 126.0 L110.0 126.6 L112.0 127.9 L114.0 130.0 L116.0 132.7 L118.0 135.9 L120.0 139.6 L122.0 143.6 L124.0 147.8 L126.0 152.2 L128.0 156.4 L130.0 160.4 L132.0 164.1 L134.0 167.3 L136.0 170.0 L138.0 172.1 L140.0 173.4 L142.0 174.0 L144.0 173.8 L146.0 172.8 L148.0 171.1 L150.0 168.8 L152.0 165.8 L154.0 162.3 L156.0 158.4 L158.0 154.3 L160.0 150.0" class="ink" stroke-width="3"/>
+        <path d="M200.0 60.0 L202.0 57.9 L204.0 55.8 L206.0 53.8 L208.0 52.1 L210.0 50.6 L212.0 49.4 L214.0 48.6 L216.0 48.1 L218.0 48.0 L220.0 48.3 L222.0 49.0 L224.0 50.0 L226.0 51.3 L228.0 52.9 L230.0 54.8 L232.0 56.8 L234.0 58.9 L236.0 61.1 L238.0 63.2 L240.0 65.2 L242.0 67.1 L244.0 68.7 L246.0 70.0 L248.0 71.0 L250.0 71.7 L252.0 72.0 L254.0 71.9 L256.0 71.4 L258.0 70.6 L260.0 69.4 L262.0 67.9 L264.0 66.2 L266.0 64.2 L268.0 62.1 L270.0 60.0 L272.0 57.9 L274.0 55.8 L276.0 53.8 L278.0 52.1 L280.0 50.6 L282.0 49.4 L284.0 48.6 L286.0 48.1 L288.0 48.0 L290.0 48.3 L292.0 49.0 L294.0 50.0 L296.0 51.3 L298.0 52.9 L300.0 54.8 L302.0 56.8 L304.0 58.9 L306.0 61.1 L308.0 63.2 L310.0 65.2 L312.0 67.1 L314.0 68.7 L316.0 70.0 L318.0 71.0 L320.0 71.7 L322.0 72.0 L324.0 71.9 L326.0 71.4 L328.0 70.6 L330.0 69.4 L332.0 67.9 L334.0 66.2 L336.0 64.2 L338.0 62.1 L340.0 60.0" class="cy"/>
+        <path d="M200.0 100.0 L202.0 102.1 L204.0 104.2 L206.0 106.2 L208.0 107.9 L210.0 109.4 L212.0 110.6 L214.0 111.4 L216.0 111.9 L218.0 112.0 L220.0 111.7 L222.0 111.0 L224.0 110.0 L226.0 108.7 L228.0 107.1 L230.0 105.2 L232.0 103.2 L234.0 101.1 L236.0 98.9 L238.0 96.8 L240.0 94.8 L242.0 92.9 L244.0 91.3 L246.0 90.0 L248.0 89.0 L250.0 88.3 L252.0 88.0 L254.0 88.1 L256.0 88.6 L258.0 89.4 L260.0 90.6 L262.0 92.1 L264.0 93.8 L266.0 95.8 L268.0 97.9 L270.0 100.0 L272.0 102.1 L274.0 104.2 L276.0 106.2 L278.0 107.9 L280.0 109.4 L282.0 110.6 L284.0 111.4 L286.0 111.9 L288.0 112.0 L290.0 111.7 L292.0 111.0 L294.0 110.0 L296.0 108.7 L298.0 107.1 L300.0 105.2 L302.0 103.2 L304.0 101.1 L306.0 98.9 L308.0 96.8 L310.0 94.8 L312.0 92.9 L314.0 91.3 L316.0 90.0 L318.0 89.0 L320.0 88.3 L322.0 88.0 L324.0 88.1 L326.0 88.6 L328.0 89.4 L330.0 90.6 L332.0 92.1 L334.0 93.8 L336.0 95.8 L338.0 97.9 L340.0 100.0" class="am"/>
+        <path d="M200.0 150.0 L202.0 150.0 L204.0 150.0 L206.0 150.0 L208.0 150.0 L210.0 150.0 L212.0 150.0 L214.0 150.0 L216.0 150.0 L218.0 150.0 L220.0 150.0 L222.0 150.0 L224.0 150.0 L226.0 150.0 L228.0 150.0 L230.0 150.0 L232.0 150.0 L234.0 150.0 L236.0 150.0 L238.0 150.0 L240.0 150.0 L242.0 150.0 L244.0 150.0 L246.0 150.0 L248.0 150.0 L250.0 150.0 L252.0 150.0 L254.0 150.0 L256.0 150.0 L258.0 150.0 L260.0 150.0 L262.0 150.0 L264.0 150.0 L266.0 150.0 L268.0 150.0 L270.0 150.0 L272.0 150.0 L274.0 150.0 L276.0 150.0 L278.0 150.0 L280.0 150.0 L282.0 150.0 L284.0 150.0 L286.0 150.0 L288.0 150.0 L290.0 150.0 L292.0 150.0 L294.0 150.0 L296.0 150.0 L298.0 150.0 L300.0 150.0 L302.0 150.0 L304.0 150.0 L306.0 150.0 L308.0 150.0 L310.0 150.0 L312.0 150.0 L314.0 150.0 L316.0 150.0 L318.0 150.0 L320.0 150.0 L322.0 150.0 L324.0 150.0 L326.0 150.0 L328.0 150.0 L330.0 150.0 L332.0 150.0 L334.0 150.0 L336.0 150.0 L338.0 150.0 L340.0 150.0" class="ink" stroke-width="3"/>
+        <text x="8" y="84" class="m">+</text><text x="8" y="124" class="m">=</text>
+        <text x="188" y="84" class="m">+</text><text x="188" y="124" class="m">=</text>
+        <text class="s" x="90" y="194" text-anchor="middle">bigger: more likely</text>
+        <text class="s" x="270" y="194" text-anchor="middle">flat: never happens</text>
+        <line x1="10" y1="214" x2="350" y2="214" class="grid"/>
+        <text class="h" x="10" y="238">One photon, two routes</text>
+        <g transform="translate(0,20)">
+        <text class="s" x="14" y="282">photon</text>
+        <line x1="14" y1="296" x2="70" y2="296" class="ink" marker-end="url(#ah3)"/>
+        <line x1="70" y1="296" x2="175" y2="252" class="ln"/>
+        <line x1="70" y1="296" x2="175" y2="340" class="ln"/>
+        <line x1="175" y1="252" x2="276" y2="294" class="ln"/>
+        <line x1="175" y1="340" x2="276" y2="298" class="ln"/>
+        <line x1="62" y1="286" x2="80" y2="306" stroke="#E7EBF1" stroke-width="4"/>
+        <line x1="268" y1="286" x2="286" y2="306" stroke="#E7EBF1" stroke-width="4"/>
+        <text class="s" x="175" y="246" text-anchor="middle">route 1</text>
+        <text class="s" x="175" y="356" text-anchor="middle">route 2</text>
+        <text class="s" x="71" y="324" text-anchor="middle">splitter</text>
+        <line x1="280" y1="296" x2="318" y2="270" class="ln" marker-end="url(#ah3)"/>
+        <line x1="280" y1="296" x2="318" y2="322" class="ln" marker-end="url(#ah3)"/>
+        <rect x="322" y="256" width="26" height="26" rx="4" fill="#35CFE0"/><text class="h" x="335" y="274" text-anchor="middle" style="fill:#0A0C0F">A</text>
+        <rect x="322" y="310" width="26" height="26" rx="4" class="ln"/><text class="h" x="335" y="328" text-anchor="middle">B</text>
+        <text class="m" x="10" y="378"><tspan style="fill:#35CFE0">A:</tspan> +0.5 + 0.5 = 1 → every photon</text>
+        <text class="m" x="10" y="396"><tspan style="fill:#F5A524">B:</tspan> +0.5 − 0.5 = 0 → never</text>
+        </g>
+      </svg>
+      <figcaption>A real experiment (a Mach–Zehnder interferometer). Each route to a detector carries amplitude 0.5; one route into B picks up a minus sign. If the splitters were fair coins, B would catch half the photons. With amplitudes it catches none.</figcaption>
+    </figure>
+    <p>Block one route and B starts catching photons again: removing a way to get there makes the outcome more likely. Amplitudes add before they are squared into odds.</p>
+    <p>A quantum algorithm runs the same trick across many qubits: it steers the amplitudes so paths to wrong answers cancel and paths to the right answer reinforce, then reads once.</p>
+    <div class="oneline"><span class="lbl">In one line</span><p>Quantum computers don't try every answer at once; they make wrong answers cancel and the right one add up, then read once.</p></div>
+    <p class="deeper">Go deeper: <a class="lnk" href="parts/p03.html">P3 · the two-route calculation</a> · <a class="lnk" href="parts/p04.html">P4 · interference doing real work</a></p>
   </section>
 
-  <section id="now" class="cyan">
-    <div class="arc-head"><span class="idx">03 · PARTS 7–9</span><h2>Where it stands, November 2026</h2></div>
-    <p class="arc-sub">Who is building what, what they have actually shown, and what a software engineer should do about it. Every current-state claim is linked; company claims are tagged.</p>
-    <div class="row"><div class="num"><span class="check" data-p="p07"></span>07</div><div><div class="name"><a href="parts/p07.html">Dominant Institutions in Quantum Computing</a></div><div class="meta"><span>superconducting · trapped ion · neutral atom · photonic · topological · governments</span></div><div class="desc">The players by modality, their best public results and their stated roadmaps, with the review status of each claim.</div></div></div>
-    <div class="row"><div class="num"><span class="check" data-p="p08"></span>08</div><div><div class="name"><a href="parts/p08.html">Recent Breakthroughs</a></div><div class="meta"><span>Willow · Helios · IBM + UChicago · Infleqtion · NIST IR 8547 · RSA estimates</span></div><div class="desc">2024 to November 2026, with a table of what "logical qubit" meant in each announcement and a checklist for reading the next press release.</div></div></div>
-    <div class="row"><div class="num"><span class="check" data-p="p09"></span>09</div><div><div class="name"><a href="parts/p09.html">Conclusion</a></div><div class="meta"><span>timelines · signals to watch · PQC migration · how to get hands-on</span></div><div class="desc">What to believe, what would change your mind, and the short list of things worth doing now.</div></div></div>
+  <!-- 4 · ENTANGLEMENT -->
+  <section class="idea" id="entanglement">
+    <div class="kicker">Idea 4 of 8</div>
+    <h2>Entanglement: linked outcomes</h2>
+    <p class="plain">Two qubits can share a single state, so that each one looks random on its own but their results always line up, and quantum algorithms need this to do anything a normal computer can't.</p>
+    <figure class="dia">
+      <svg viewBox="0 0 360 258" role="img" aria-label="Two qubits, A and B, inside one shared state. A two by two table of results: A 0 and B 0 happens half the time, A 1 and B 1 happens half the time, mismatched results never happen. Each qubit alone is a fair coin.">
+        <rect x="40" y="12" width="280" height="76" rx="14" class="ln" stroke-dasharray="5 4"/>
+        <text class="s" x="180" y="30" text-anchor="middle">one shared state, not two separate ones</text>
+        <circle cx="120" cy="60" r="18" fill="#35CFE0"/><text class="h" x="120" y="65" text-anchor="middle" style="fill:#0A0C0F">A</text>
+        <circle cx="240" cy="60" r="18" fill="#35CFE0"/><text class="h" x="240" y="65" text-anchor="middle" style="fill:#0A0C0F">B</text>
+        <text class="s" x="230" y="116" text-anchor="middle">B reads 0</text>
+        <text class="s" x="310" y="116" text-anchor="middle">B reads 1</text>
+        <text class="s" x="184" y="150" text-anchor="end">A reads 0</text>
+        <text class="s" x="184" y="200" text-anchor="end">A reads 1</text>
+        <rect x="190" y="124" width="80" height="44" fill="rgba(53,207,224,.18)" stroke="#35CFE0"/>
+        <rect x="270" y="124" width="80" height="44" class="grid"/>
+        <rect x="190" y="174" width="80" height="44" class="grid"/>
+        <rect x="270" y="174" width="80" height="44" fill="rgba(53,207,224,.18)" stroke="#35CFE0"/>
+        <text class="h" x="230" y="151" text-anchor="middle">half</text>
+        <text class="s" x="310" y="151" text-anchor="middle">never</text>
+        <text class="s" x="230" y="201" text-anchor="middle">never</text>
+        <text class="h" x="310" y="201" text-anchor="middle">half</text>
+        <text x="10" y="150">The four</text><text x="10" y="166">possible</text><text x="10" y="182">results:</text>
+        <text x="180" y="248" text-anchor="middle">Each alone: a fair coin. Together: <tspan style="fill:#E7EBF1;font-weight:600">always match.</tspan></text>
+      </svg>
+      <figcaption>The simplest entangled pair (a Bell state). The pair has one description that cannot be split into "A's state" plus "B's state".</figcaption>
+    </figure>
+    <p>Two sealed envelopes with matching cards also always agree, so why is this special? Tilt both measurements to the same new angle and they still agree, and at different angles they agree in a pattern no pre-written answers can reproduce. John Bell proved that in 1964; the experiments that confirmed it won the 2022 Nobel Prize in Physics.</p>
+    <p>It cannot carry a message: B's results on their own stay a 50/50 coin whatever A does, and the match only shows when the two lists are compared. For computing, entanglement is necessary but not sufficient; a computation that creates little of it can be simulated efficiently on an ordinary computer.</p>
+    <div class="oneline"><span class="lbl">In one line</span><p>Entangled qubits share one state: random one at a time, perfectly correlated together. A resource, not a wire.</p></div>
+    <p class="deeper">Go deeper: <a class="lnk" href="parts/p03.html">P3 · entanglement and no-cloning</a> · <a class="lnk" href="parts/p04.html">P4 · as linear algebra</a></p>
+  </section>
+
+  <!-- 5 · STRUCTURE -->
+  <section class="idea" id="structure">
+    <div class="kicker">Idea 5 of 8</div>
+    <h2>What it actually speeds up</h2>
+    <p class="plain">A quantum computer is not a faster CPU; it is a narrow accelerator that wins big only on problems with a hidden regularity that interference can pick out.</p>
+    <figure class="dia">
+      <svg viewBox="0 0 360 360" role="img" aria-label="Top: the powers of 3, keeping the remainder after dividing by 13, go 3, 9, 1 and then repeat every 3 steps. Finding that repeat length is the core of breaking RSA. Bottom: three tiers. Huge speedup: factoring and code-breaking, and simulating molecules and materials. Small speedup: brute-force search, where a trillion checks become about a million slower ones. No speedup shown: the hardest puzzles, optimisation and most machine learning.">
+        <text class="h" x="10" y="20">The kind of structure it can use</text>
+        <text class="s" x="10" y="40">powers of 3, remainder after dividing by 13</text>
+        <g>
+          <rect x="10" y="52" width="34" height="30" class="grid"/><rect x="47" y="52" width="34" height="30" class="grid"/><rect x="84" y="52" width="34" height="30" class="grid"/>
+          <rect x="121" y="52" width="34" height="30" class="grid"/><rect x="158" y="52" width="34" height="30" class="grid"/><rect x="195" y="52" width="34" height="30" class="grid"/>
+          <rect x="232" y="52" width="34" height="30" class="grid"/><rect x="269" y="52" width="34" height="30" class="grid"/><rect x="306" y="52" width="34" height="30" class="grid"/>
+        </g>
+        <text class="m" x="27" y="72" text-anchor="middle" style="fill:#35CFE0">3</text><text class="m" x="64" y="72" text-anchor="middle" style="fill:#F5A524">9</text><text class="m" x="101" y="72" text-anchor="middle" style="fill:#E7EBF1">1</text>
+        <text class="m" x="138" y="72" text-anchor="middle" style="fill:#35CFE0">3</text><text class="m" x="175" y="72" text-anchor="middle" style="fill:#F5A524">9</text><text class="m" x="212" y="72" text-anchor="middle" style="fill:#E7EBF1">1</text>
+        <text class="m" x="249" y="72" text-anchor="middle" style="fill:#35CFE0">3</text><text class="m" x="286" y="72" text-anchor="middle" style="fill:#F5A524">9</text><text class="m" x="323" y="72" text-anchor="middle" style="fill:#E7EBF1">1</text>
+        <path d="M10 90 L10 96 L118 96 L118 90" class="ln"/><path d="M121 90 L121 96 L229 96 L229 90" class="ln"/><path d="M232 90 L232 96 L340 96 L340 90" class="ln"/>
+        <text class="s" x="175" y="114" text-anchor="middle">repeats every 3 steps</text>
+        <text x="10" y="138">For a real RSA key the repeat is astronomically</text>
+        <text x="10" y="155">long. Shor's algorithm finds it with interference.</text>
+        <line x1="10" y1="172" x2="350" y2="172" class="grid"/>
+        <rect x="10" y="186" width="96" height="24" rx="12" fill="#35CFE0"/><text class="m" x="58" y="203" text-anchor="middle" style="fill:#0A0C0F;font-weight:600">HUGE</text>
+        <text x="118" y="196" style="fill:#E7EBF1">Breaking RSA and elliptic-curve codes</text>
+        <text x="118" y="213">Simulating chemistry (strong case)</text>
+        <rect x="10" y="240" width="96" height="24" rx="12" fill="#F5A524"/><text class="m" x="58" y="257" text-anchor="middle" style="fill:#0A0C0F;font-weight:600">SMALL</text>
+        <text x="118" y="250" style="fill:#E7EBF1">Brute-force search (Grover)</text>
+        <text x="118" y="267">a trillion checks → about a million,</text>
+        <text x="118" y="284">but each quantum step is far slower</text>
+        <rect x="10" y="306" width="96" height="24" rx="12" class="ln"/><text class="m" x="58" y="323" text-anchor="middle">NOT SHOWN</text>
+        <text x="118" y="316" style="fill:#E7EBF1">The hardest puzzles, optimisation,</text>
+        <text x="118" y="333">most machine learning</text>
+      </svg>
+      <figcaption>Top: 3, 9, 27, 81… keeping only the remainder after dividing by 13. Factoring turns into finding how often a pattern like this repeats. Bottom: the scorecard from part 5.</figcaption>
+    </figure>
+    <p>For factoring, the best known classical method slows down far faster than <dfn>Shor's algorithm</dfn> as numbers grow, so the gap widens without limit. For unstructured search, <dfn>Grover's algorithm</dfn> <span class="gl">(searching a list with no order to exploit)</span> needs only the square root of the checks, but each quantum step is so much slower than a CPU's that breaking even takes months on plausible assumptions.</p>
+    <p>The hardest scheduling and routing puzzles (the <dfn>NP-complete</dfn> ones) are not believed to fall at all, and no optimisation or machine-learning workload has a demonstrated quantum advantage today.</p>
+    <div class="oneline"><span class="lbl">In one line</span><p>Big wins need hidden structure: code-breaking and chemistry yes, generic search barely, generic optimisation not shown.</p></div>
+    <p class="deeper">Go deeper: <a class="lnk" href="parts/p02.html">P2 · Why quantum?</a> · <a class="lnk" href="parts/p05.html">P5 · the scorecard</a></p>
+  </section>
+
+  <!-- 6 · ERRORS -->
+  <section class="idea" id="errors">
+    <div class="kicker">Idea 6 of 8</div>
+    <h2>Errors: why one good qubit costs hundreds of bad ones</h2>
+    <p class="plain">Today's qubits slip about once every thousand operations, useful programs need about one slip in a trillion, and the classical fix of keeping copies is off the table, because a qubit cannot be copied.</p>
+    <figure class="dia">
+      <svg viewBox="0 0 360 576" role="img" aria-label="Top: a scale of error rates. Today's best qubits fail about one operation in a thousand; big algorithms need about one in a trillion, a gap of a billion times. Middle: a small error-correcting patch of 17 qubits: 9 data qubits that together hold one reliable qubit, and 8 check qubits that each ask whether their neighbours agree. Bottom: bigger patches are more reliable: 17 qubits at size 3, 49 at size 5, 97 at size 7 as in Google's Willow chip, and 881 at size 21, enough for a long run when each operation fails one time in a thousand.">
+        <text class="h" x="10" y="20">How often an operation goes wrong <tspan class="s" style="font-weight:400">(1 in …)</tspan></text>
+        <line x1="40" y1="62" x2="330" y2="62" class="ln"/>
+        <g class="s">
+          <line x1="40" y1="56" x2="40" y2="68" class="ln"/><line x1="96" y1="56" x2="96" y2="68" class="ln"/><line x1="152" y1="56" x2="152" y2="68" class="ln"/><line x1="208" y1="56" x2="208" y2="68" class="ln"/><line x1="264" y1="56" x2="264" y2="68" class="ln"/>
+        </g>
+        <text class="s m" x="40" y="86" text-anchor="middle">100</text>
+        <text class="s m" x="96" y="86" text-anchor="middle">10k</text>
+        <text class="s m" x="152" y="86" text-anchor="middle">1M</text>
+        <text class="s m" x="208" y="86" text-anchor="middle">100M</text>
+        <text class="s m" x="264" y="86" text-anchor="middle">10B</text>
+        <text class="s m" x="320" y="86" text-anchor="middle">1T</text>
+        <circle cx="68" cy="62" r="7" fill="#F5A524"/>
+        <circle cx="320" cy="62" r="7" fill="#35CFE0"/>
+        <text class="a" x="68" y="44" text-anchor="middle">today: 1 in 1,000</text>
+        <text class="c" x="350" y="44" text-anchor="end">needed: 1 in a trillion</text>
+        <path d="M68 100 L68 106 L320 106 L320 100" class="ln"/>
+        <text x="194" y="124" text-anchor="middle" style="fill:#E7EBF1;font-weight:600">a billion times better</text>
+
+        <line x1="10" y1="140" x2="350" y2="140" class="grid"/>
+        <text class="h" x="10" y="164">The fix: spread one qubit across many</text>
+        <g transform="translate(0,20)">
+        <!-- distance-3 surface code: 9 data qubits (white) + 8 check qubits; amber = phase-flip checks, cyan = bit-flip checks -->
+        <rect x="60" y="190" width="60" height="60" fill="rgba(245,165,36,.20)" stroke="#F5A524"/>
+        <rect x="120" y="190" width="60" height="60" fill="rgba(53,207,224,.18)" stroke="#35CFE0"/>
+        <rect x="60" y="250" width="60" height="60" fill="rgba(53,207,224,.18)" stroke="#35CFE0"/>
+        <rect x="120" y="250" width="60" height="60" fill="rgba(245,165,36,.20)" stroke="#F5A524"/>
+        <path d="M120 190 A30 30 0 0 1 180 190 Z" fill="rgba(245,165,36,.20)" stroke="#F5A524"/>
+        <path d="M60 310 A30 30 0 0 0 120 310 Z" fill="rgba(245,165,36,.20)" stroke="#F5A524"/>
+        <path d="M60 190 A30 30 0 0 0 60 250 Z" fill="rgba(53,207,224,.18)" stroke="#35CFE0"/>
+        <path d="M180 250 A30 30 0 0 1 180 310 Z" fill="rgba(53,207,224,.18)" stroke="#35CFE0"/>
+        <g fill="#0A0C0F" stroke-width="2">
+          <rect x="84" y="214" width="12" height="12" stroke="#F5A524"/><rect x="144" y="214" width="12" height="12" stroke="#35CFE0"/>
+          <rect x="84" y="274" width="12" height="12" stroke="#35CFE0"/><rect x="144" y="274" width="12" height="12" stroke="#F5A524"/>
+          <rect x="144" y="170" width="12" height="12" stroke="#F5A524"/><rect x="84" y="318" width="12" height="12" stroke="#F5A524"/>
+          <rect x="38" y="214" width="12" height="12" stroke="#35CFE0"/><rect x="190" y="274" width="12" height="12" stroke="#35CFE0"/>
+        </g>
+        <g fill="#E7EBF1">
+          <circle cx="60" cy="190" r="7"/><circle cx="120" cy="190" r="7"/><circle cx="180" cy="190" r="7"/>
+          <circle cx="60" cy="250" r="7"/><circle cx="120" cy="250" r="7"/><circle cx="180" cy="250" r="7"/>
+          <circle cx="60" cy="310" r="7"/><circle cx="120" cy="310" r="7"/><circle cx="180" cy="310" r="7"/>
+        </g>
+        <circle cx="224" cy="196" r="6" fill="#E7EBF1"/>
+        <text x="236" y="200" style="fill:#E7EBF1">9 data qubits</text>
+        <text class="s" x="236" y="216">together hold one</text>
+        <text class="s" x="236" y="231">reliable qubit</text>
+        <rect x="218" y="250" width="12" height="12" fill="#0A0C0F" stroke="#35CFE0" stroke-width="2"/>
+        <text x="236" y="260" style="fill:#E7EBF1">8 check qubits</text>
+        <text class="s" x="236" y="276">each asks "do my</text>
+        <text class="s" x="236" y="291">neighbours agree?"</text>
+        <text class="c" x="236" y="314">cyan: bit flips</text>
+        <text class="a" x="236" y="330">amber: phase flips</text>
+
+        </g>
+        <g transform="translate(0,16)">
+        <line x1="10" y1="356" x2="350" y2="356" class="grid"/>
+        <text class="h" x="10" y="380">Bigger patch, fewer failures</text>
+        <text class="s" x="10" y="398">qubits per reliable qubit</text>
+        <text class="m" x="10" y="428">size 3</text><rect x="74" y="416" width="5" height="16" fill="#35CFE0"/><text class="m" x="86" y="428" style="fill:#E7EBF1">17</text>
+        <text class="m" x="10" y="458">size 5</text><rect x="74" y="446" width="14" height="16" fill="#35CFE0"/><text class="m" x="95" y="458" style="fill:#E7EBF1">49</text>
+        <text class="m" x="10" y="488">size 7</text><rect x="74" y="476" width="26" height="16" fill="#35CFE0"/><text class="m" x="107" y="488" style="fill:#E7EBF1">97</text><text class="s" x="134" y="488">Google Willow, 2024</text>
+        <text class="m" x="10" y="518">size 21</text><rect x="74" y="506" width="250" height="16" fill="#F5A524"/><text class="m" x="318" y="518" text-anchor="end" style="fill:#0A0C0F;font-weight:600">881</text>
+        <text class="s" x="74" y="544">size 21: enough for a long run at 1-in-1,000</text>
+        </g>
+      </svg>
+      <figcaption>A size-3 <i>surface code</i>, the standard design. Checks measure only whether neighbours agree, which locates a slip without reading the stored information. By the model in part 6, each size step cuts failures about tenfold when qubits slip 1 time in 1,000; Willow measured about twofold per step.</figcaption>
+    </figure>
+    <p>One reliable qubit built this way is called a <dfn>logical qubit</dfn>; the hardware qubits it is made of are <dfn>physical qubits</dfn>. The trick only works below a <dfn>threshold</dfn> <span class="gl">(roughly 1 slip per 100 operations for this design)</span>. Below it, a bigger patch means fewer failures. Above it, a bigger patch just adds more ways to fail.</p>
+    <p>So a machine's qubit count matters less than how often each qubit slips: a qubit ten times better cuts a useful machine roughly fourfold. Try it in the <a class="lnk" href="parts/p06.html#qec-calc">physical-per-logical calculator</a>.</p>
+    <div class="oneline"><span class="lbl">In one line</span><p>Error correction trades many unreliable qubits for one reliable one, about 900 to 1 for today's quality, and only works if the qubits are already good enough.</p></div>
+    <p class="deeper">Go deeper: <a class="lnk" href="parts/p06.html">P6 · Challenges, with the calculator</a></p>
+  </section>
+
+  <!-- 7 · STATUS -->
+  <section class="idea" id="status">
+    <div class="kicker">Idea 7 of 8</div>
+    <h2>Where the hardware stands, November 2026</h2>
+    <p class="plain">Error correction now demonstrably works in the lab, on machines roughly 50 to 10,000 times smaller than the jobs that would matter.</p>
+    <figure class="dia">
+      <svg viewBox="0 0 360 440" role="img" aria-label="A ladder of physical qubit counts on a scale where each step is ten times more. Built so far: about 100 qubits in the best error-correction demonstrations from Google and Quantinuum, 448 atoms at Harvard, MIT and QuEra, and 2,034 qubits on IBM's newest chip without error correction. Needed: under 100,000 for RSA-2048 if long-range wiring works, under a million for RSA-2048 in about a week, about 4 million for a key chemistry problem, and 20 million by the 2019 RSA estimate.">
+        <line x1="62" y1="40" x2="62" y2="412" class="ln"/>
+        <g>
+          <line x1="56" y1="410" x2="68" y2="410" class="ln"/><text class="s" x="50" y="414" text-anchor="end">10</text>
+          <line x1="56" y1="358" x2="68" y2="358" class="ln"/><text class="s" x="50" y="362" text-anchor="end">100</text>
+          <line x1="56" y1="306" x2="68" y2="306" class="ln"/><text class="s" x="50" y="310" text-anchor="end">1,000</text>
+          <line x1="56" y1="254" x2="68" y2="254" class="ln"/><text class="s" x="50" y="258" text-anchor="end">10k</text>
+          <line x1="56" y1="202" x2="68" y2="202" class="ln"/><text class="s" x="50" y="206" text-anchor="end">100k</text>
+          <line x1="56" y1="150" x2="68" y2="150" class="ln"/><text class="s" x="50" y="154" text-anchor="end">1M</text>
+          <line x1="56" y1="98" x2="68" y2="98" class="ln"/><text class="s" x="50" y="102" text-anchor="end">10M</text>
+          <line x1="56" y1="46" x2="68" y2="46" class="ln"/><text class="s" x="50" y="50" text-anchor="end">100M</text>
+        </g>
+        <text class="h" x="62" y="22" text-anchor="middle">physical qubits</text>
+        <rect x="63" y="224" width="290" height="58" fill="rgba(229,72,77,.08)"/>
+        <text class="s" x="350" y="252" text-anchor="end" style="fill:#FF9B8F">the gap: roughly 50× to 10,000×</text>
+        <!-- needed (amber) -->
+        <circle cx="62" cy="82" r="6" fill="#F5A524"/><text class="a" x="78" y="80">RSA-2048, 2019 estimate: 20M</text><text class="s" x="78" y="95">peer reviewed</text>
+        <circle cx="62" cy="119" r="6" fill="#F5A524"/><text class="a" x="78" y="117">Chemistry (FeMoco): ~4M, under 4 days</text><text class="s" x="78" y="132">peer reviewed, 2021</text>
+        <circle cx="62" cy="150" r="6" fill="#F5A524"/><text class="a" x="78" y="155">RSA-2048 in a week: under 1M</text><text class="s" x="78" y="170">Gidney 2025 · preprint</text>
+        <circle cx="62" cy="202" r="6" fill="#F5A524"/><text class="a" x="78" y="200">RSA-2048 with long-range wiring: &lt;100k</text><text class="s" x="78" y="215">2026 · preprint</text>
+        <!-- built (cyan) -->
+        <circle cx="62" cy="290" r="6" fill="#35CFE0"/><text class="c" x="78" y="294">IBM chip: 2,034 (520 usable), no correction</text><text class="s" x="78" y="309">Nov 2026 · company claim</text>
+        <circle cx="62" cy="324" r="6" fill="#35CFE0"/><text class="c" x="78" y="328">Harvard/MIT/QuEra: 448 atoms</text><text class="s" x="78" y="343">full error-correction toolkit · peer reviewed</text>
+        <circle cx="62" cy="358" r="6" fill="#35CFE0"/><text class="c" x="78" y="362">Google Willow 105, Quantinuum Helios 98</text><text class="s" x="78" y="377">best error correction: Willow peer reviewed,</text><text class="s" x="78" y="392">Helios result a company report</text>
+        <text class="s" x="78" y="432"><tspan style="fill:#35CFE0">●</tspan> built so far   <tspan style="fill:#F5A524">●</tspan> needed for useful jobs</text>
+      </svg>
+      <figcaption>Each step up is ten times more physical qubits. "Needed" figures are published estimates assuming qubits that slip 1 time in 1,000; they keep falling as algorithms improve.</figcaption>
+    </figure>
+    <p>The real milestone is that error correction behaves as theory said. Google's Willow chip grew its patch from size 3 to 5 to 7 and failures fell at each step (<a class="lnk" href="https://www.nature.com/articles/s41586-024-08449-y" target="_blank" rel="noopener">Nature, Dec 2024</a>). Quantinuum reports about 5 failures per million rounds of storage at size 7 on Helios, in a company report not yet peer reviewed (<a class="lnk" href="https://www.quantinuum.com/fault-tolerance-by-2029" target="_blank" rel="noopener">Quantinuum, Oct 2026</a>).</p>
+    <p>Be careful with "N logical qubits" headlines. The biggest 2026 numbers mostly use codes that only <em>detect</em> slips and throw away the bad runs, which does not scale; <a class="lnk" href="parts/p08.html#logical-table">this table</a> shows what each announcement meant. Vendors promise small error-corrected machines around 2029 (IBM's Starling targets 200 logical qubits), and <a class="lnk" href="https://www.darpa.mil/news/2026/four-more-teams-enter-quantum-benchmarking-initiative-final-stage" target="_blank" rel="noopener">DARPA</a> is formally testing whether anyone can reach useful scale by 2033.</p>
+    <div class="oneline"><span class="lbl">In one line</span><p>The physics works; the machines are still far too small, and "logical qubit" in a headline often means less than it sounds.</p></div>
+    <p class="deeper">Go deeper: <a class="lnk" href="parts/p07.html">P7 · Who is building it</a> · <a class="lnk" href="parts/p08.html">P8 · Recent breakthroughs</a></p>
+  </section>
+
+  <!-- 8 · ACT -->
+  <section class="idea" id="act">
+    <div class="kicker">Idea 8 of 8</div>
+    <h2>What to do now</h2>
+    <p class="plain">The one thing most engineers should act on today is replacing RSA and elliptic-curve cryptography, because encrypted data recorded now can be decrypted whenever a big enough machine shows up.</p>
+    <figure class="dia">
+      <svg viewBox="0 0 360 425" role="img" aria-label="A timeline. 2024: NIST publishes the replacement algorithms ML-KEM and ML-DSA. 2026, now: NIST's transition rules are final. 2030: RSA and elliptic-curve cryptography deprecated. 2035: disallowed. Below: traffic recorded today can be decrypted later, whenever a large enough quantum computer exists; the date is unknown.">
+        <line x1="70" y1="40" x2="70" y2="315" stroke="#AEB6C2" stroke-width="2"/>
+        <circle cx="70" cy="40" r="7" fill="#35CFE0"/>
+        <text class="m" x="56" y="45" text-anchor="end">2024</text>
+        <text x="86" y="38" style="fill:#E7EBF1">Replacements published:</text><text class="s" x="86" y="54">ML-KEM, ML-DSA (NIST)</text>
+        <circle cx="70" cy="90" r="9" fill="#F5A524"/>
+        <text class="m a" x="56" y="95" text-anchor="end">now</text>
+        <text x="86" y="88" style="fill:#E7EBF1">Transition rules final</text><text class="s" x="86" y="104">NIST IR 8547, Oct 2026</text>
+        <circle cx="70" cy="190" r="7" fill="#E7EBF1"/>
+        <text class="m" x="56" y="195" text-anchor="end">2030</text>
+        <text x="86" y="194" style="fill:#E7EBF1">RSA and elliptic curves deprecated</text>
+        <circle cx="70" cy="315" r="7" fill="#E5484D"/>
+        <text class="m" x="56" y="320" text-anchor="end">2035</text>
+        <text x="86" y="319" style="fill:#E7EBF1">Disallowed</text>
+        <line x1="10" y1="347" x2="350" y2="347" class="grid"/>
+        <text class="h" x="10" y="371">Harvest now, decrypt later</text>
+        <text class="s" x="10" y="397">recorded today</text>
+        <line x1="110" y1="393" x2="240" y2="393" stroke="#F5A524" stroke-width="2" stroke-dasharray="6 5"/>
+        <path d="M240 387 L252 393 L240 399 z" fill="#F5A524"/>
+        <text class="s" x="258" y="389">read once the</text><text class="s" x="258" y="405">machine exists</text>
+      </svg>
+      <figcaption>Years to scale. Nobody knows when a code-breaking machine arrives, but long-lived data is already exposed, so the deadlines come first.</figcaption>
+    </figure>
+    <p>In practice: inventory where your systems use RSA, Diffie–Hellman or elliptic-curve keys, and plan the move to the <a class="lnk" href="https://csrc.nist.gov/projects/post-quantum-cryptography" target="_blank" rel="noopener">NIST post-quantum standards</a> (dates per <a class="lnk" href="https://csrc.nist.gov/pubs/ir/8547/final" target="_blank" rel="noopener">NIST IR 8547</a>). Symmetric ciphers and hashes are only mildly affected; longer keys cover it.</p>
+    <p>Beyond crypto, the long-term prize is chemistry and materials, and the first real win will probably look modest: one molecule, checked against experiment. Treat pitches about quantum optimisation and machine learning with suspicion.</p>
+    <div class="oneline"><span class="lbl">In one line</span><p>Start the post-quantum migration now; for everything else, watch the error rates, not the qubit counts.</p></div>
+    <p class="deeper">Go deeper: <a class="lnk" href="parts/p09.html">P9 · Conclusion</a></p>
+  </section>
+
+  <section id="parts">
+    <div class="arc-head"><span class="idx">THE NINE PAGES</span><h2>Go deeper</h2></div>
+    <p class="arc-sub">Each page takes one or two of the ideas above all the way down, with the math.</p>
+    <p class="progress" id="progress">Tick a page when you have worked through it; this browser remembers.</p>
+    <div class="group" id="why">
+      <h3>Why quantum · parts 1–3</h3>
+      <div class="row"><div class="num"><span class="check" data-p="p01"></span>01</div><div><div class="name"><a href="parts/p01.html">Fundamentals of Classical Computation</a></div><div class="desc">The computer you know, written so that quantum computing changes exactly one rule of it.</div></div></div>
+      <div class="row"><div class="num"><span class="check" data-p="p02"></span>02</div><div><div class="name"><a href="parts/p02.html">Why Quantum?</a></div><div class="desc">Nature is expensive to simulate, so build a computer out of nature. What that buys, and what it doesn't.</div></div></div>
+      <div class="row"><div class="num"><span class="check" data-p="p03"></span>03</div><div><div class="name"><a href="parts/p03.html">Enter the Quantum World</a></div><div class="desc">Amplitudes, interference, measurement, entanglement and decoherence as small calculations, plus what qubits are made of.</div></div></div>
+    </div>
+    <div class="group" id="how">
+      <h3>How it works, and what it's for · parts 4–6</h3>
+      <div class="row"><div class="num"><span class="check" data-p="p04"></span>04</div><div><div class="name"><a href="parts/p04.html">Fundamentals of Quantum Computation</a></div><div class="desc">Qubits and gates as linear algebra, and interference doing real work in a small algorithm.</div></div></div>
+      <div class="row"><div class="num"><span class="check" data-p="p05"></span>05</div><div><div class="name"><a href="parts/p05.html">Capabilities of Quantum Computation</a></div><div class="desc">Shor, Grover, chemistry, optimisation: what each buys and what it costs in qubits and hours.</div></div></div>
+      <div class="row"><div class="num"><span class="check" data-p="p06"></span>06</div><div><div class="name"><a href="parts/p06.html">Challenges of Quantum Computation</a></div><div class="desc">Noise, the threshold, the surface code, and an interactive calculator for physical qubits per logical qubit.</div></div></div>
+    </div>
+    <div class="group cyan" id="now">
+      <h3>Where it stands · parts 7–9</h3>
+      <div class="row"><div class="num"><span class="check" data-p="p07"></span>07</div><div><div class="name"><a href="parts/p07.html">Dominant Institutions in Quantum Computing</a></div><div class="desc">Who builds what, grouped by kind of qubit, with the review status of every claim.</div></div></div>
+      <div class="row"><div class="num"><span class="check" data-p="p08"></span>08</div><div><div class="name"><a href="parts/p08.html">Recent Breakthroughs</a></div><div class="desc">Late 2024 to November 2026, and a checklist for reading the next press release.</div></div></div>
+      <div class="row"><div class="num"><span class="check" data-p="p09"></span>09</div><div><div class="name"><a href="parts/p09.html">Conclusion</a></div><div class="desc">What to believe, what would change your mind, and what to do on Monday.</div></div></div>
+    </div>
   </section>
 
   <section id="refs">
-    <div class="arc-head"><span class="idx">04</span><h2>Start here if you want to go deeper</h2></div>
+    <div class="arc-head"><span class="idx">SOURCES</span><h2>Start here if you want to go deeper</h2></div>
     <div class="links">
       <a href="https://arxiv.org/abs/1801.00862" target="_blank" rel="noopener"><b>Quantum Computing in the NISQ era and beyond</b><span>John Preskill, 2018 — the paper that named the noisy era</span></a>
       <a href="https://www.nature.com/articles/s41586-024-08449-y" target="_blank" rel="noopener"><b>Quantum error correction below the surface code threshold</b><span>Google Quantum AI, Nature, Dec 2024</span></a>
@@ -122,7 +491,7 @@
     </div>
   </section>
 </main>
-<footer>Quantum Computing, Mapped · original explanation written November 2026 · current-state claims checked against primary sources on 15 Nov 2026; company announcements are labelled as such.</footer>
+<footer>Quantum Computing, Mapped · original explanation written November 2026 · current-state claims checked against primary sources on 15 Nov 2026; company announcements are labelled as such. Diagrams redrawn 21 Nov 2026.</footer>
 <script>
 (function(){
   var KEY='quantum-field-map-progress';var st={};try{st=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
